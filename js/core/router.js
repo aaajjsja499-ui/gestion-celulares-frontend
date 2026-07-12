@@ -1,0 +1,41 @@
+// GESTION_CELULARES - js/core/router.js
+// Router minimo basado en el hash de la URL. Cada pantalla registra
+// una funcion de render; el router solo decide cual mostrar.
+// Deliberadamente simple - no hay reactividad ni virtual DOM, es
+// una SPA chica pensada para editarse a mano desde SPCK.
+
+const Router = (() => {
+  const rutas = {};
+  const contenedorId = "app-contenido";
+
+  function registrar(ruta, funcionRender) {
+    rutas[ruta] = funcionRender;
+  }
+
+  function navegar(ruta) {
+    window.location.hash = ruta;
+  }
+
+  function render() {
+    const ruta = window.location.hash.replace("#", "") || "dashboard";
+    const contenedor = document.getElementById(contenedorId);
+    const funcionRender = rutas[ruta];
+
+    if (!contenedor) return;
+
+    if (!funcionRender) {
+      contenedor.innerHTML = `<p>Pantalla "${ruta}" todavia no implementada.</p>`;
+      return;
+    }
+
+    contenedor.innerHTML = "";
+    funcionRender(contenedor);
+  }
+
+  function iniciar() {
+    window.addEventListener("hashchange", render);
+    render();
+  }
+
+  return { registrar, navegar, iniciar };
+})();

@@ -1,0 +1,21 @@
+/* GESTION_CELULARES - css/componentes.css */
+/* Componentes reutilizables. Se va a ir llenando fase a fase -
+   tarjetas de resumen, alertas, formularios, etc. Fase 0 solo
+   necesita el aviso de error de login. */
+
+#login-error {
+  background: #fdecea;
+  color: #b3261e;
+  padding: 0.75em 1em;
+  border-radius: 6px;
+  margin-top: 1em;
+}
+
+.aviso-conexion {
+  background: #fff4e5;
+  color: #8a5300;
+  padding: 0.5em 1em;
+  border-radius: 6px;
+  margin-bottom: 1em;
+  font-size: 0.9rem;
+}
