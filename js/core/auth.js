@@ -9,8 +9,15 @@
 const Auth = (() => {
   let idToken = null;
 
-  function iniciar() {
+  function iniciar(intentos = 0) {
     if (!window.google || !window.google.accounts) {
+      // El script de Google se carga con "async" y puede terminar
+      // despues que este archivo se ejecuta. En vez de rendirnos al
+      // primer intento, reintentamos un rato antes de dar error real.
+      if (intentos < 50) {
+        setTimeout(() => iniciar(intentos + 1), 100);
+        return;
+      }
       console.error("Google Identity Services no cargo. Revisar el script en index.html.");
       return;
     }
