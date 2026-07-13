@@ -10,7 +10,7 @@
 //      en Google Cloud Console y copiar el Client ID.
 
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyQa6oyr0lAMhSDKmItSBvhzTaQ3t4U1_tKmwdakdlbaWyhXU0bQoKxdh4M5QUtFvEA/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzTNcxcc0QPqHdEem6-TXf18_brAFE9owF0cXdjjg1nAb7ocy4CsHzBds69wM3u627L8g/exec",
   GOOGLE_CLIENT_ID: "816925529734-df8igd0sg1ijr20tgiaohh7mpj9bcqeg.apps.googleusercontent.com",
   NOMBRE_SISTEMA: "Sistema de Gestion de Celulares",
   MONEDA: "PYG",
