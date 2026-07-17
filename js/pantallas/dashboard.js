@@ -10,6 +10,12 @@ async function renderDashboard(contenedor) {
     <h2>Prueba de conectividad - Fase 0</h2>
     <p id="dashboard-estado">Cargando datos desde Apps Script...</p>
     <div id="dashboard-tablas"></div>
+    <div id="dashboard-prueba-escritura" hidden>
+      <h3>Prueba de escritura (criterio de cierre de Fase 0)</h3>
+      <input type="text" id="prueba-nota" placeholder="Nota de prueba" />
+      <button id="btn-prueba-escritura">Probar escritura</button>
+      <p id="prueba-resultado"></p>
+    </div>
   `;
 
   const estadoEl = document.getElementById("dashboard-estado");
@@ -27,6 +33,7 @@ async function renderDashboard(contenedor) {
     });
     estadoEl.textContent = `Conexion OK. ${datos.equipos.length} equipos, ${datos.modelos.length} modelos.`;
     pintarTablas(datos);
+    configurarPruebaEscritura(datos.equipos);
   } catch (err) {
     console.error(err);
     estadoEl.textContent =
@@ -64,6 +71,45 @@ function pintarTablas(datos) {
       <tbody>${filasModelos || '<tr><td colspan="4">Sin modelos todavia.</td></tr>'}</tbody>
     </table>
   `;
+}
+
+/**
+ * Prueba de escritura minima para cerrar el criterio de aceptacion
+ * de Fase 0: "el frontend puede leer y escribir en Equipos con
+ * incremento de version". Toma el primer equipo ya cargado y manda
+ * siempre la version con la que se cargo la pantalla (no la
+ * actualiza tras un exito) - asi el primer clic escribe bien y
+ * cualquier clic siguiente sin refrescar dispara a proposito el
+ * conflicto de version (Diseno Tecnico, Seccion 5.1).
+ */
+function configurarPruebaEscritura(equipos) {
+  const cont = document.getElementById("dashboard-prueba-escritura");
+  const resultadoEl = document.getElementById("prueba-resultado");
+  const boton = document.getElementById("btn-prueba-escritura");
+
+  if (!equipos.length) {
+    resultadoEl.textContent = "No hay equipos cargados para probar la escritura.";
+    cont.hidden = false;
+    return;
+  }
+
+  const equipoPrueba = equipos[0];
+  cont.hidden = false;
+
+  boton.addEventListener("click", async () => {
+    const nota = document.getElementById("prueba-nota").value;
+    resultadoEl.textContent = "Escribiendo...";
+    try {
+      const resultado = await Api.llamar("probarEscrituraEquipo", {
+        idEquipo: equipoPrueba.id_equipo,
+        version: equipoPrueba.version,
+        nota,
+      });
+      resultadoEl.textContent = `Escritura OK, nueva version: ${resultado.versionNueva}`;
+    } catch (err) {
+      resultadoEl.textContent = `Error: ${err.message}`;
+    }
+  });
 }
 
 Router.registrar("dashboard", renderDashboard);
