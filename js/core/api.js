@@ -41,5 +41,12 @@ const Api = (() => {
     return llamar("obtenerEquiposYModelos");
   }
 
-  return { llamar, obtenerEquiposYModelos };
+  // Prueba de escritura de Fase 0: cierra el criterio de aceptacion
+  // "el frontend puede leer y escribir en Equipos con incremento de
+  // version". Sin logica de negocio real - eso es Fase 1.
+  async function probarEscrituraEquipo(idEquipo, version, nota) {
+    return llamar("probarEscrituraEquipo", { idEquipo, version, nota });
+  }
+
+  return { llamar, obtenerEquiposYModelos, probarEscrituraEquipo };
 })();
