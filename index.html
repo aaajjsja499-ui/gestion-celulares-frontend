@@ -9,8 +9,6 @@
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/componentes.css" />
   <link rel="stylesheet" href="css/tema-oscuro.css" />
-
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -21,8 +19,16 @@
 
   <main id="login-pantalla">
     <h1>Gestion de Celulares</h1>
-    <p>Iniciá sesión con tu cuenta de Google para continuar.</p>
-    <div id="boton-login-google"></div>
+    <p>Iniciá sesión con tu email y PIN para continuar.</p>
+    <form id="form-login">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" name="email" required autocomplete="username" />
+
+      <label for="login-pin">PIN</label>
+      <input type="password" id="login-pin" name="pin" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" required autocomplete="current-password" />
+
+      <button type="submit">Ingresar</button>
+    </form>
     <p id="login-error" hidden></p>
   </main>
 

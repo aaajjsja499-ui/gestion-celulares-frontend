@@ -1,75 +1,67 @@
 // GESTION_CELULARES - js/core/auth.js
-// Login real con Google Identity Services (Propuesta de
-// Autenticacion Real, DOC-011). El id_token que Google entrega aca
-// se manda en cada escritura; Apps Script lo vuelve a verificar del
-// lado servidor - este archivo NUNCA decide por si solo quien tiene
-// que rol, solo obtiene el token y pide a Apps Script los datos
-// reales de Usuarios.
+// Login propio por email + PIN (Propuesta de Autenticacion Real
+// v2.0, DOC-011). Reemplaza Google Identity Services: Apps Script
+// valida el PIN contra el hash guardado en Usuarios y devuelve un
+// token de sesion propio. Ese token se manda en cada escritura;
+// Apps Script lo vuelve a verificar del lado servidor contra
+// Sesiones_Activas - este archivo NUNCA decide por si solo quien
+// tiene que rol, solo obtiene el token y pide a Apps Script los
+// datos reales de Usuarios.
 
 const Auth = (() => {
-  let idToken = null;
+  let token = null;
 
-  function iniciar(intentos = 0) {
-    if (!window.google || !window.google.accounts) {
-      // El script de Google se carga con "async" y puede terminar
-      // despues que este archivo se ejecuta. En vez de rendirnos al
-      // primer intento, reintentamos un rato antes de dar error real.
-      if (intentos < 50) {
-        setTimeout(() => iniciar(intentos + 1), 100);
-        return;
-      }
-      console.error("Google Identity Services no cargo. Revisar el script en index.html.");
+  function iniciar() {
+    const form = document.getElementById("form-login");
+    if (!form) {
+      console.error("No se encontro #form-login en index.html.");
       return;
     }
-    google.accounts.id.initialize({
-      client_id: CONFIG.GOOGLE_CLIENT_ID,
-      callback: manejarRespuestaGoogle,
-    });
-    google.accounts.id.renderButton(
-      document.getElementById("boton-login-google"),
-      { theme: "outline", size: "large", text: "signin_with" }
-    );
+    form.addEventListener("submit", manejarEnvioLogin);
   }
 
-  async function manejarRespuestaGoogle(respuesta) {
-    idToken = respuesta.credential;
+  async function manejarEnvioLogin(evento) {
+    evento.preventDefault();
+    ocultarError();
+
+    const email = document.getElementById("login-email").value.trim();
+    const pin = document.getElementById("login-pin").value.trim();
+
     try {
-      const perfil = await Api.llamar("verificarSesion", { idToken });
-      if (!perfil || !perfil.activo) {
-        mostrarErrorAcceso();
-        return;
-      }
+      const perfil = await Api.llamar("login", { email, pin });
+      token = perfil.token;
       Estado.set({
         usuario: { email: perfil.email, nombre: perfil.nombre, roles: perfil.roles },
         rolActivo: perfil.roles.length === 1 ? perfil.roles[0] : null,
       });
       document.dispatchEvent(new CustomEvent("gestion-celulares:login-ok"));
     } catch (err) {
-      console.error("Error verificando sesion contra Usuarios:", err);
-      mostrarErrorAcceso();
+      console.error("Error de login:", err);
+      mostrarError(err.message || "No se pudo iniciar sesion.");
     }
   }
 
-  function mostrarErrorAcceso() {
+  function mostrarError(mensaje) {
     const cont = document.getElementById("login-error");
     if (cont) {
-      cont.textContent =
-        "Esta cuenta no esta dada de alta o fue desactivada. Contacta al Administrador.";
+      cont.textContent = mensaje;
       cont.hidden = false;
     }
   }
 
-  function getIdToken() {
-    return idToken;
+  function ocultarError() {
+    const cont = document.getElementById("login-error");
+    if (cont) cont.hidden = true;
+  }
+
+  function getToken() {
+    return token;
   }
 
   function cerrarSesion() {
-    idToken = null;
+    token = null;
     Estado.set({ usuario: null, rolActivo: null });
-    if (window.google && window.google.accounts) {
-      google.accounts.id.disableAutoSelect();
-    }
   }
 
-  return { iniciar, getIdToken, cerrarSesion };
+  return { iniciar, getToken, cerrarSesion };
 })();

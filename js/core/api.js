@@ -2,14 +2,15 @@
 // Unico punto de contacto con Apps Script. Cada operacion de
 // negocio es UNA sola llamada (Diseno Tecnico, Seccion 5.2) - nunca
 // se encadenan varias escrituras sueltas desde el frontend.
-// Toda llamada de escritura manda el idToken; Apps Script lo
-// verifica siempre del lado servidor (Seccion 5.3 y 6.1).
+// Toda llamada (salvo "login") manda el token de sesion propio;
+// Apps Script lo verifica siempre del lado servidor contra
+// Sesiones_Activas (Seccion 5.3 y 6.1).
 
 const Api = (() => {
   async function llamar(operacion, payload = {}) {
     const cuerpo = {
       operacion,
-      idToken: Auth.getIdToken ? Auth.getIdToken() : null,
+      token: Auth.getToken ? Auth.getToken() : null,
       datos: payload,
     };
 
