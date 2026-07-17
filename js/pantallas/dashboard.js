@@ -1,21 +1,18 @@
 // GESTION_CELULARES - js/pantallas/dashboard.js
 // Version minima de Fase 0: prueba de conectividad leyendo Equipos
 // y Modelos, y mostrandolos en una tabla simple (criterio de
-// aceptacion de Fase 0, Hoja de Ruta). El Dashboard real y completo
-// (tarjetas, alertas, capital de trabajo, aging, etc. - Especificacion
-// de Interfaz Seccion 4.1) se construye en Fase 1 y Fase 4.
+// aceptacion de Fase 0, Hoja de Ruta). Incluye tambien la prueba de
+// escritura con control de version (mismo criterio de aceptacion).
+// El Dashboard real y completo (tarjetas, alertas, capital de
+// trabajo, aging, etc. - Especificacion de Interfaz Seccion 4.1) se
+// construye en Fase 1 y Fase 4.
 
 async function renderDashboard(contenedor) {
   contenedor.innerHTML = `
     <h2>Prueba de conectividad - Fase 0</h2>
     <p id="dashboard-estado">Cargando datos desde Apps Script...</p>
     <div id="dashboard-tablas"></div>
-    <div id="dashboard-prueba-escritura" hidden>
-      <h3>Prueba de escritura (criterio de cierre de Fase 0)</h3>
-      <input type="text" id="prueba-nota" placeholder="Nota de prueba" />
-      <button id="btn-prueba-escritura">Probar escritura</button>
-      <p id="prueba-resultado"></p>
-    </div>
+    <div id="dashboard-prueba-escritura"></div>
   `;
 
   const estadoEl = document.getElementById("dashboard-estado");
@@ -33,7 +30,7 @@ async function renderDashboard(contenedor) {
     });
     estadoEl.textContent = `Conexion OK. ${datos.equipos.length} equipos, ${datos.modelos.length} modelos.`;
     pintarTablas(datos);
-    configurarPruebaEscritura(datos.equipos);
+    pintarPruebaEscritura(datos.equipos);
   } catch (err) {
     console.error(err);
     estadoEl.textContent =
@@ -73,39 +70,37 @@ function pintarTablas(datos) {
   `;
 }
 
-/**
- * Prueba de escritura minima para cerrar el criterio de aceptacion
- * de Fase 0: "el frontend puede leer y escribir en Equipos con
- * incremento de version". Toma el primer equipo ya cargado y manda
- * siempre la version con la que se cargo la pantalla (no la
- * actualiza tras un exito) - asi el primer clic escribe bien y
- * cualquier clic siguiente sin refrescar dispara a proposito el
- * conflicto de version (Diseno Tecnico, Seccion 5.1).
- */
-function configurarPruebaEscritura(equipos) {
+// Prueba de escritura de Fase 0. Usa el primer equipo de la lista
+// (pensado para EQ-TEST-001) y su version actual. Sin logica de
+// negocio real - solo demuestra que escribir con control de version
+// funciona de punta a punta.
+function pintarPruebaEscritura(equipos) {
   const cont = document.getElementById("dashboard-prueba-escritura");
-  const resultadoEl = document.getElementById("prueba-resultado");
-  const boton = document.getElementById("btn-prueba-escritura");
-
   if (!equipos.length) {
-    resultadoEl.textContent = "No hay equipos cargados para probar la escritura.";
-    cont.hidden = false;
+    cont.innerHTML = "<p>Sin equipos para probar escritura todavia.</p>";
     return;
   }
 
   const equipoPrueba = equipos[0];
-  cont.hidden = false;
 
-  boton.addEventListener("click", async () => {
+  cont.innerHTML = `
+    <h3>Prueba de escritura (Fase 0)</h3>
+    <p>Equipo: ${equipoPrueba.id_equipo} - version actual: <span id="prueba-version">${equipoPrueba.version}</span></p>
+    <input type="text" id="prueba-nota" placeholder="Nota de prueba" />
+    <button id="prueba-boton">Probar escritura</button>
+    <p id="prueba-resultado"></p>
+  `;
+
+  document.getElementById("prueba-boton").addEventListener("click", async () => {
+    const resultadoEl = document.getElementById("prueba-resultado");
     const nota = document.getElementById("prueba-nota").value;
+    const versionActual = Number(document.getElementById("prueba-version").textContent);
+
     resultadoEl.textContent = "Escribiendo...";
     try {
-      const resultado = await Api.llamar("probarEscrituraEquipo", {
-        idEquipo: equipoPrueba.id_equipo,
-        version: equipoPrueba.version,
-        nota,
-      });
-      resultadoEl.textContent = `Escritura OK, nueva version: ${resultado.versionNueva}`;
+      const resultado = await Api.probarEscrituraEquipo(equipoPrueba.id_equipo, versionActual, nota);
+      resultadoEl.textContent = `Escritura OK. Nueva version: ${resultado.versionNueva}`;
+      document.getElementById("prueba-version").textContent = resultado.versionNueva;
     } catch (err) {
       resultadoEl.textContent = `Error: ${err.message}`;
     }
