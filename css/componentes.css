@@ -1,21 +1,98 @@
-/* GESTION_CELULARES - css/componentes.css */
-/* Componentes reutilizables. Se va a ir llenando fase a fase -
-   tarjetas de resumen, alertas, formularios, etc. Fase 0 solo
-   necesita el aviso de error de login. */
+/* Ficha de Equipo (Fase 1) */
 
-#login-error {
-  background: #fdecea;
-  color: #b3261e;
-  padding: 0.75em 1em;
-  border-radius: 6px;
-  margin-top: 1em;
+.ficha-encabezado {
+  margin-bottom: 1em;
 }
 
-.aviso-conexion {
-  background: #fff4e5;
-  color: #8a5300;
-  padding: 0.5em 1em;
+.ficha-estado-actual {
+  font-size: 1.1rem;
+}
+
+.ficha-panel-acciones {
+  margin: 1em 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+
+.boton-transicion {
+  padding: 0.6em 1em;
+  border: none;
   border-radius: 6px;
-  margin-bottom: 1em;
+  background: #1a1a1a;
+  color: #fff;
+  font-weight: 600;
+}
+
+.ficha-seccion {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.6em 1em;
+  margin-bottom: 0.6em;
+}
+
+.ficha-seccion summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ficha-seccion-deshabilitada {
+  color: #888;
   font-size: 0.9rem;
+}
+
+/* Modal de confirmacion de transicion */
+
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+  z-index: 1000;
+}
+
+.modal-caja {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.2em;
+  max-width: 420px;
+  width: 100%;
+}
+
+.modal-caja textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 0.3em;
+  box-sizing: border-box;
+}
+
+.modal-error {
+  color: #b3261e;
+  font-size: 0.9rem;
+}
+
+.modal-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5em;
+  margin-top: 0.8em;
+}
+
+.modal-botones button {
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: 6px;
+}
+
+#modal-confirmar {
+  background: #1a1a1a;
+  color: #fff;
+  font-weight: 600;
 }
