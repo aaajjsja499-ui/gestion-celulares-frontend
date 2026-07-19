@@ -2,10 +2,11 @@
 // Version minima de Fase 0: prueba de conectividad leyendo Equipos
 // y Modelos, y mostrandolos en una tabla simple (criterio de
 // aceptacion de Fase 0, Hoja de Ruta). Incluye tambien la prueba de
-// escritura con control de version (mismo criterio de aceptacion).
+// escritura con control de version (mismo criterio de aceptacion),
+// y ahora un link a la Ficha de Equipo (Fase 1) desde cada fila.
 // El Dashboard real y completo (tarjetas, alertas, capital de
 // trabajo, aging, etc. - Especificacion de Interfaz Seccion 4.1) se
-// construye en Fase 1 y Fase 4.
+// construye mas adelante en Fase 1 y Fase 4.
 
 async function renderDashboard(contenedor) {
   contenedor.innerHTML = `
@@ -48,7 +49,10 @@ function pintarTablas(datos) {
   const cont = document.getElementById("dashboard-tablas");
 
   const filasEquipos = datos.equipos
-    .map((e) => `<tr><td>${e.id_equipo ?? ""}</td><td>${e.marca ?? ""}</td><td>${e.modelo ?? ""}</td><td>${e.estado ?? ""}</td></tr>`)
+    .map(
+      (e) =>
+        `<tr><td><a href="#ficha-equipo/${e.id_equipo}">${e.id_equipo ?? ""}</a></td><td>${e.marca ?? ""}</td><td>${e.modelo ?? ""}</td><td>${e.estado ?? ""}</td></tr>`
+    )
     .join("");
 
   const filasModelos = datos.modelos
@@ -70,10 +74,6 @@ function pintarTablas(datos) {
   `;
 }
 
-// Prueba de escritura de Fase 0. Usa el primer equipo de la lista
-// (pensado para EQ-TEST-001) y su version actual. Sin logica de
-// negocio real - solo demuestra que escribir con control de version
-// funciona de punta a punta.
 function pintarPruebaEscritura(equipos) {
   const cont = document.getElementById("dashboard-prueba-escritura");
   if (!equipos.length) {
