@@ -62,6 +62,32 @@ const Api = (() => {
     return llamar("crearEquipoDetectado", { marca, modelo, notas });
   }
 
+  // --- Fase 2 (Diagnostico y Reparaciones) ---
+
+  // Guarda un nuevo diagnostico. No transiciona el equipo - el
+  // backend solo devuelve una sugerencia (hayFallos, sugerenciaEstado).
+  async function guardarDiagnostico(idEquipo, items, imeiVerificado, estadoFisico, evidenciaHumedad, comentario) {
+    return llamar("guardarDiagnostico", {
+      idEquipo,
+      items,
+      imeiVerificado,
+      estadoFisico,
+      evidenciaHumedad,
+      comentario,
+    });
+  }
+
+  async function obtenerDiagnosticosEquipo(idEquipo) {
+    return llamar("obtenerDiagnosticosEquipo", { idEquipo });
+  }
+
+  // Fila unica de Configuracion (tarifa_mano_obra, margen_minimo,
+  // etc. - Diseno Tecnico Seccion 3.11). Usado por el motor de
+  // valoracion PT-04 en la Pantalla de Diagnostico.
+  async function obtenerConfiguracion() {
+    return llamar("obtenerConfiguracion");
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -70,5 +96,8 @@ const Api = (() => {
     transicionarEquipo,
     obtenerDatosDashboard,
     crearEquipoDetectado,
+    guardarDiagnostico,
+    obtenerDiagnosticosEquipo,
+    obtenerConfiguracion,
   };
 })();
