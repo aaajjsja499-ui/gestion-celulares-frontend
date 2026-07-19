@@ -1,98 +1,63 @@
-/* Ficha de Equipo (Fase 1) */
+/* Listado de Equipos (Fase 1) */
 
-.ficha-encabezado {
-  margin-bottom: 1em;
-}
-
-.ficha-estado-actual {
-  font-size: 1.1rem;
-}
-
-.ficha-panel-acciones {
-  margin: 1em 0;
+.equipos-filtros {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5em;
-}
-
-.boton-transicion {
-  padding: 0.6em 1em;
-  border: none;
-  border-radius: 6px;
-  background: #1a1a1a;
-  color: #fff;
-  font-weight: 600;
-}
-
-.ficha-seccion {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 0.6em 1em;
-  margin-bottom: 0.6em;
-}
-
-.ficha-seccion summary {
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.ficha-seccion-deshabilitada {
-  color: #888;
-  font-size: 0.9rem;
-}
-
-/* Modal de confirmacion de transicion */
-
-.modal-fondo {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
+  gap: 0.6em;
+  margin-bottom: 1em;
   align-items: center;
-  justify-content: center;
-  padding: 1em;
-  z-index: 1000;
 }
 
-.modal-caja {
-  background: #fff;
-  border-radius: 8px;
-  padding: 1.2em;
-  max-width: 420px;
-  width: 100%;
-}
-
-.modal-caja textarea {
-  width: 100%;
-  font-family: inherit;
-  font-size: 1rem;
+.equipos-filtros input[type="text"] {
+  flex: 1 1 220px;
   padding: 0.5em;
   border: 1px solid #ccc;
   border-radius: 6px;
-  margin-top: 0.3em;
-  box-sizing: border-box;
 }
 
-.modal-error {
-  color: #b3261e;
-  font-size: 0.9rem;
-}
-
-.modal-botones {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5em;
-  margin-top: 0.8em;
-}
-
-.modal-botones button {
-  padding: 0.5em 1em;
-  border: none;
+.equipos-filtros select,
+.equipos-filtros input[type="date"] {
+  padding: 0.5em;
+  border: 1px solid #ccc;
   border-radius: 6px;
 }
 
-#modal-confirmar {
+.equipos-filtros label {
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.fila-estado-positivo {
+  background: #eaf7ea;
+}
+
+.fila-estado-atencion {
+  background: #fdf1e3;
+}
+
+.fila-estado-cerrado {
+  background: #f0f0f0;
+  color: #888;
+}
+
+#equipos-paginacion {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  margin-top: 0.8em;
+}
+
+#equipos-paginacion button {
+  padding: 0.4em 0.9em;
+  border: none;
+  border-radius: 6px;
   background: #1a1a1a;
   color: #fff;
-  font-weight: 600;
+}
+
+#equipos-paginacion button:disabled {
+  background: #ccc;
+  color: #888;
 }
