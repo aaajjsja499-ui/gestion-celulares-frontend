@@ -36,27 +36,30 @@ const Api = (() => {
     return resultado.datos;
   }
 
-  // Prueba de conectividad de Fase 0: trae Equipos y Modelos.
   async function obtenerEquiposYModelos() {
     return llamar("obtenerEquiposYModelos");
   }
 
-  // Prueba de escritura de Fase 0.
   async function probarEscrituraEquipo(idEquipo, version, nota) {
     return llamar("probarEscrituraEquipo", { idEquipo, version, nota });
   }
 
-  // Ficha de Equipo (Fase 1): equipo, historial y transiciones
-  // disponibles para el rol actual.
   async function obtenerFichaEquipo(idEquipo) {
     return llamar("obtenerFichaEquipo", { idEquipo });
   }
 
-  // Ejecuta una transicion de estado. version es la que el frontend
-  // tenia cargada - si no coincide con la real, el backend rechaza
-  // (control de concurrencia, Diseno Tecnico Seccion 5.1).
   async function transicionarEquipo(idEquipo, version, estadoNuevo, comentario) {
     return llamar("transicionarEquipo", { idEquipo, version, estadoNuevo, comentario });
+  }
+
+  // Dashboard real (Fase 1): equipos, historial y config de SLA.
+  async function obtenerDatosDashboard() {
+    return llamar("obtenerDatosDashboard");
+  }
+
+  // Alta de equipo nuevo en estado Detectado.
+  async function crearEquipoDetectado(marca, modelo, notas) {
+    return llamar("crearEquipoDetectado", { marca, modelo, notas });
   }
 
   return {
@@ -65,5 +68,7 @@ const Api = (() => {
     probarEscrituraEquipo,
     obtenerFichaEquipo,
     transicionarEquipo,
+    obtenerDatosDashboard,
+    crearEquipoDetectado,
   };
 })();
