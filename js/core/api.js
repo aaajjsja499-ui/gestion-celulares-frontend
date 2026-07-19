@@ -41,12 +41,29 @@ const Api = (() => {
     return llamar("obtenerEquiposYModelos");
   }
 
-  // Prueba de escritura de Fase 0: cierra el criterio de aceptacion
-  // "el frontend puede leer y escribir en Equipos con incremento de
-  // version". Sin logica de negocio real - eso es Fase 1.
+  // Prueba de escritura de Fase 0.
   async function probarEscrituraEquipo(idEquipo, version, nota) {
     return llamar("probarEscrituraEquipo", { idEquipo, version, nota });
   }
 
-  return { llamar, obtenerEquiposYModelos, probarEscrituraEquipo };
+  // Ficha de Equipo (Fase 1): equipo, historial y transiciones
+  // disponibles para el rol actual.
+  async function obtenerFichaEquipo(idEquipo) {
+    return llamar("obtenerFichaEquipo", { idEquipo });
+  }
+
+  // Ejecuta una transicion de estado. version es la que el frontend
+  // tenia cargada - si no coincide con la real, el backend rechaza
+  // (control de concurrencia, Diseno Tecnico Seccion 5.1).
+  async function transicionarEquipo(idEquipo, version, estadoNuevo, comentario) {
+    return llamar("transicionarEquipo", { idEquipo, version, estadoNuevo, comentario });
+  }
+
+  return {
+    llamar,
+    obtenerEquiposYModelos,
+    probarEscrituraEquipo,
+    obtenerFichaEquipo,
+    transicionarEquipo,
+  };
 })();
