@@ -3,14 +3,15 @@
 // y Modelos, y mostrandolos en una tabla simple (criterio de
 // aceptacion de Fase 0, Hoja de Ruta). Incluye tambien la prueba de
 // escritura con control de version (mismo criterio de aceptacion),
-// y ahora un link a la Ficha de Equipo (Fase 1) desde cada fila.
-// El Dashboard real y completo (tarjetas, alertas, capital de
-// trabajo, aging, etc. - Especificacion de Interfaz Seccion 4.1) se
-// construye mas adelante en Fase 1 y Fase 4.
+// y ahora links a la Ficha de Equipo y al Listado de Equipos
+// (Fase 1). El Dashboard real y completo (tarjetas, alertas, capital
+// de trabajo, aging, etc. - Especificacion de Interfaz Seccion 4.1)
+// se construye mas adelante en Fase 1 y Fase 4.
 
 async function renderDashboard(contenedor) {
   contenedor.innerHTML = `
     <h2>Prueba de conectividad - Fase 0</h2>
+    <p><a href="#equipos">Ver listado completo de equipos &rarr;</a></p>
     <p id="dashboard-estado">Cargando datos desde Apps Script...</p>
     <div id="dashboard-tablas"></div>
     <div id="dashboard-prueba-escritura"></div>
