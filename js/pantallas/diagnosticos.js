@@ -31,7 +31,7 @@ const ITEMS_DIAGNOSTICO_UI = [
 
 const ESTADOS_FASE_COMPRA = ["Detectado", "En negociación"];
 
-async function renderDiagnosticos(contenedor, idEquipo) {
+async function renderDiagnosticos(contenedor, idEquipo, mensajeExito) {
   if (!idEquipo) {
     contenedor.innerHTML = `
       <p><a href="#equipos">&larr; Volver al listado</a></p>
@@ -47,14 +47,14 @@ async function renderDiagnosticos(contenedor, idEquipo) {
       Api.obtenerFichaEquipo(idEquipo),
       Api.obtenerDiagnosticosEquipo(idEquipo),
     ]);
-    await pintarPantallaDiagnostico(contenedor, ficha, diagnosticosPrevios);
+    await pintarPantallaDiagnostico(contenedor, ficha, diagnosticosPrevios, mensajeExito);
   } catch (err) {
     console.error(err);
     contenedor.innerHTML = `<p>Error al cargar: ${err.message}</p>`;
   }
 }
 
-async function pintarPantallaDiagnostico(contenedor, ficha, diagnosticosPrevios) {
+async function pintarPantallaDiagnostico(contenedor, ficha, diagnosticosPrevios, mensajeExito) {
   const e = ficha.equipo;
 
   contenedor.innerHTML = `
@@ -63,6 +63,8 @@ async function pintarPantallaDiagnostico(contenedor, ficha, diagnosticosPrevios)
     <h2>Diagnóstico - ${e.id_equipo} - ${e.marca} ${e.modelo}</h2>
     <p>Estado actual: <strong>${e.estado}</strong></p>
 
+    ${mensajeExito ? `<p id="diagnostico-resultado" class="diagnostico-mensaje-exito">${mensajeExito}</p>` : ""}
+
     <details class="ficha-seccion" ${diagnosticosPrevios.length ? "" : "open"}>
       <summary>Diagnósticos previos (${diagnosticosPrevios.length})</summary>
       ${pintarDiagnosticosPrevios(diagnosticosPrevios)}
@@ -70,7 +72,6 @@ async function pintarPantallaDiagnostico(contenedor, ficha, diagnosticosPrevios)
 
     <h3>Nuevo diagnóstico</h3>
     <form id="form-diagnostico"></form>
-    <p id="diagnostico-resultado" hidden></p>
   `;
 
   const form = document.getElementById("form-diagnostico");
@@ -262,9 +263,7 @@ async function guardarDiagnosticoDesdeFormulario(form, ficha) {
       comentario
     );
 
-    const resultadoEl = document.getElementById("diagnostico-resultado");
-    resultadoEl.hidden = false;
-    resultadoEl.innerHTML = `
+    const mensajeExito = `
       Diagnóstico ${resultado.idDiagnostico} guardado.
       Sugerencia: pasar a "<strong>${resultado.sugerenciaEstado}</strong>".
       <a href="#ficha-equipo/${ficha.equipo.id_equipo}">Ir a la ficha para confirmar la transición &rarr;</a>
@@ -272,9 +271,12 @@ async function guardarDiagnosticoDesdeFormulario(form, ficha) {
 
     // Recarga la pantalla para que el diagnostico recien guardado
     // aparezca en "Diagnosticos previos" y el formulario quede
-    // limpio para uno nuevo si hiciera falta.
+    // limpio para uno nuevo si hiciera falta. El mensaje de exito
+    // viaja como parametro para no perderse en el re-render (bug
+    // encontrado en pruebas de Pedro: el mensaje se escribia y al
+    // toque se borraba con el innerHTML del recargado).
     const contenedor = document.getElementById("app-contenido");
-    renderDiagnosticos(contenedor, ficha.equipo.id_equipo);
+    await renderDiagnosticos(contenedor, ficha.equipo.id_equipo, mensajeExito);
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.hidden = false;
