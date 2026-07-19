@@ -61,3 +61,54 @@
   background: #ccc;
   color: #888;
 }
+
+/* Dashboard real (Fase 1) */
+
+.tarjetas-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8em;
+  margin: 1em 0;
+}
+
+.tarjeta-resumen {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.8em 1.2em;
+  min-width: 120px;
+  text-align: center;
+}
+
+.tarjeta-numero {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.tarjeta-etiqueta {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.lista-alertas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lista-alertas li {
+  background: #fdf1e3;
+  border-radius: 6px;
+  padding: 0.6em 1em;
+  margin-bottom: 0.4em;
+}
+
+#boton-nuevo-equipo {
+  padding: 0.6em 1.2em;
+  border: none;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #fff;
+  font-weight: 600;
+  margin: 0.5em 0 1em 0;
+}
