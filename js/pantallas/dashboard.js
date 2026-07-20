@@ -30,7 +30,10 @@ function pintarDashboard(contenedor, datos) {
 
   contenedor.innerHTML = `
     <h2>Dashboard</h2>
-    <p><a href="#equipos">Ver listado completo de equipos &rarr;</a></p>
+    <p>
+      <a href="#equipos">Ver listado completo de equipos &rarr;</a> ·
+      <a href="#diagnosticos">Iniciar diagnóstico &rarr;</a>
+    </p>
 
     ${puedeCrear ? '<button id="boton-nuevo-equipo">+ Nuevo equipo detectado</button>' : ""}
 

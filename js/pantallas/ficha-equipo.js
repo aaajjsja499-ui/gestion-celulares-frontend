@@ -14,15 +14,18 @@ async function renderFichaEquipo(contenedor, idEquipo) {
   contenedor.innerHTML = `<p>Cargando ficha de ${idEquipo}...</p>`;
 
   try {
-    const ficha = await Api.obtenerFichaEquipo(idEquipo);
-    pintarFicha(contenedor, ficha);
+    const [ficha, diagnosticosPrevios] = await Promise.all([
+      Api.obtenerFichaEquipo(idEquipo),
+      Api.obtenerDiagnosticosEquipo(idEquipo),
+    ]);
+    pintarFicha(contenedor, ficha, diagnosticosPrevios);
   } catch (err) {
     console.error(err);
     contenedor.innerHTML = `<p>Error al cargar la ficha: ${err.message}</p>`;
   }
 }
 
-function pintarFicha(contenedor, ficha) {
+function pintarFicha(contenedor, ficha, diagnosticosPrevios) {
   const e = ficha.equipo;
 
   contenedor.innerHTML = `
@@ -44,9 +47,10 @@ function pintarFicha(contenedor, ficha) {
       <p>Notas: ${e.notas || "-"}</p>
     </details>
 
-    <details class="ficha-seccion">
-      <summary>Diagnósticos (disponible en Fase 2)</summary>
-      <p class="ficha-seccion-deshabilitada">Esta seccion se habilita cuando se implemente Fase 2 (Diagnóstico y Reparaciones) de la Hoja de Ruta.</p>
+    <details class="ficha-seccion" ${diagnosticosPrevios.length ? "" : "open"}>
+      <summary>Diagnósticos (${diagnosticosPrevios.length})</summary>
+      <p><a href="#diagnosticos/${e.id_equipo}">Nuevo diagnóstico &rarr;</a></p>
+      ${pintarDiagnosticosPrevios(diagnosticosPrevios)}
     </details>
 
     <details class="ficha-seccion">
