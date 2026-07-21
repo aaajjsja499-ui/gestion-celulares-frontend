@@ -54,8 +54,9 @@ function pintarFicha(contenedor, ficha, diagnosticosPrevios) {
     </details>
 
     <details class="ficha-seccion">
-      <summary>Reparaciones (disponible en Fase 2)</summary>
-      <p class="ficha-seccion-deshabilitada">Esta seccion se habilita cuando se implemente Fase 2 (Diagnóstico y Reparaciones) de la Hoja de Ruta.</p>
+      <summary>Reparaciones</summary>
+      <p><a href="#reparaciones">Ver cola de reparaciones &rarr;</a></p>
+      <p class="ficha-seccion-deshabilitada">Historial de reparaciones de este equipo especifico: pendiente, todavia no hay endpoint para listarlo por equipo.</p>
     </details>
 
     <details class="ficha-seccion" open>
@@ -63,13 +64,26 @@ function pintarFicha(contenedor, ficha, diagnosticosPrevios) {
       ${pintarHistorial(ficha.historial)}
     </details>
 
-    <details class="ficha-seccion">
-      <summary>Ventas (disponible en Fase 3)</summary>
-      <p class="ficha-seccion-deshabilitada">Esta seccion se habilita cuando se implemente Fase 3 (Ventas y Garantías) de la Hoja de Ruta.</p>
+    <details class="ficha-seccion" ${ficha.venta ? "open" : ""}>
+      <summary>Venta y Garantía</summary>
+      ${pintarVenta(ficha.venta)}
     </details>
   `;
 
   pintarPanelAcciones(ficha);
+}
+
+function pintarVenta(venta) {
+  if (!venta) {
+    return '<p class="ficha-seccion-deshabilitada">Este equipo todavía no se vendió.</p>';
+  }
+  return `
+    <p>Venta ${venta.id_venta} - Fecha: ${formatearFecha(venta.fecha_venta)}</p>
+    <p>Precio: ${formatearGuaranies(venta.precio_venta)}</p>
+    <p>Cliente: ${venta.cliente}</p>
+    <p>Canal: ${venta.canal_venta || "-"}</p>
+    <p>Garantía: ${venta.garantia_dias} días - Estado: ${venta.estado_garantia || "Aún no entregado"}</p>
+  `;
 }
 
 function pintarPanelAcciones(ficha) {
@@ -86,7 +100,16 @@ function pintarPanelAcciones(ficha) {
     .join(" ");
 
   cont.querySelectorAll(".boton-transicion").forEach((boton) => {
-    boton.addEventListener("click", () => abrirModalTransicion(ficha, boton.dataset.estado));
+    boton.addEventListener("click", () => {
+      const estado = boton.dataset.estado;
+      if (estado === "Vendido") {
+        abrirModalVenta(ficha);
+      } else if (estado === "Entregado") {
+        abrirModalEntregar(ficha);
+      } else {
+        abrirModalTransicion(ficha, estado);
+      }
+    });
   });
 }
 
@@ -125,6 +148,161 @@ function abrirModalTransicion(ficha, estadoNuevo) {
       fondo.remove();
       Router.navegar("ficha-equipo", ficha.equipo.id_equipo);
       renderFichaEquipo(document.getElementById("app-contenido"), ficha.equipo.id_equipo);
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.hidden = false;
+    }
+  });
+}
+
+async function abrirModalVenta(ficha) {
+  const e = ficha.equipo;
+  const fondo = document.createElement("div");
+  fondo.className = "modal-fondo";
+  fondo.innerHTML = `
+    <div class="modal-caja">
+      <h3>Registrar venta - ${e.id_equipo}</h3>
+      <p id="venta-referencias">Cargando referencias de precio...</p>
+
+      <label for="venta-cliente-select">Cliente</label>
+      <select id="venta-cliente-select">
+        <option value="">Cargando clientes...</option>
+        <option value="__nuevo__">+ Cliente nuevo</option>
+      </select>
+      <div id="venta-cliente-nuevo" hidden>
+        <label for="venta-cliente-nombre">Nombre</label>
+        <input type="text" id="venta-cliente-nombre" />
+        <label for="venta-cliente-contacto">Contacto</label>
+        <input type="text" id="venta-cliente-contacto" />
+      </div>
+
+      <label for="venta-precio">Precio de venta (Gs.)</label>
+      <input type="number" id="venta-precio" min="1" />
+
+      <label for="venta-garantia">Días de garantía</label>
+      <input type="number" id="venta-garantia" min="0" />
+
+      <label for="venta-fecha">Fecha de venta</label>
+      <input type="date" id="venta-fecha" />
+
+      <label for="venta-canal">Canal de venta</label>
+      <select id="venta-canal">
+        <option value="Facebook Marketplace">Facebook Marketplace</option>
+        <option value="WhatsApp">WhatsApp</option>
+        <option value="Tienda física">Tienda física</option>
+        <option value="Otro">Otro</option>
+      </select>
+
+      <p id="venta-error" class="modal-error" hidden></p>
+      <div class="modal-botones">
+        <button id="venta-cancelar">Cancelar</button>
+        <button id="venta-confirmar">Confirmar venta</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(fondo);
+
+  document.getElementById("venta-fecha").value = new Date().toISOString().slice(0, 10);
+  document.getElementById("venta-cancelar").addEventListener("click", () => fondo.remove());
+
+  const selectCliente = document.getElementById("venta-cliente-select");
+  const bloqueClienteNuevo = document.getElementById("venta-cliente-nuevo");
+  selectCliente.addEventListener("change", () => {
+    bloqueClienteNuevo.hidden = selectCliente.value !== "__nuevo__";
+  });
+
+  try {
+    const [datosVenta, clientes] = await Promise.all([Api.obtenerDatosVenta(e.id_equipo), Api.obtenerClientes()]);
+
+    document.getElementById("venta-garantia").value = datosVenta.diasGarantiaDefault || "";
+
+    const refEl = document.getElementById("venta-referencias");
+    if (datosVenta.modeloEnCatalogo) {
+      const alerta = datosVenta.alertaMargenBajo
+        ? `<p class="modal-error" style="display:block">Este precio de mercado deja menos margen del mínimo configurado (${datosVenta.margenMinimo}%).</p>`
+        : "";
+      refEl.innerHTML = `
+        Precio de mercado: ${formatearGuaranies(datosVenta.valorMercado)} ·
+        Costo total: ${formatearGuaranies(datosVenta.costoTotal)} ·
+        Ganancia con precio de mercado: ${formatearGuaranies(datosVenta.gananciaConPrecioSugerido)}
+        (${datosVenta.margenConPrecioSugerido.toFixed(1)}%)
+        ${alerta}
+      `;
+      document.getElementById("venta-precio").value = Math.round(datosVenta.valorMercado);
+    } else {
+      refEl.innerHTML = `Modelo no está en el Catálogo todavía - sin precio de mercado de referencia. Costo total: ${formatearGuaranies(datosVenta.costoTotal)}.`;
+    }
+
+    selectCliente.innerHTML =
+      '<option value="">Selecciona un cliente</option>' +
+      clientes.map((c) => `<option value="${c.id_cliente}">${c.nombre} (${c.contacto || "sin contacto"})</option>`).join("") +
+      '<option value="__nuevo__">+ Cliente nuevo</option>';
+  } catch (err) {
+    document.getElementById("venta-referencias").textContent = "No se pudieron cargar las referencias: " + err.message;
+  }
+
+  document.getElementById("venta-confirmar").addEventListener("click", async () => {
+    const errorEl = document.getElementById("venta-error");
+    const idClienteExistente = selectCliente.value && selectCliente.value !== "__nuevo__" ? selectCliente.value : null;
+    const clienteNuevo =
+      selectCliente.value === "__nuevo__"
+        ? {
+            nombre: document.getElementById("venta-cliente-nombre").value.trim(),
+            contacto: document.getElementById("venta-cliente-contacto").value.trim(),
+          }
+        : null;
+    const precioVenta = Number(document.getElementById("venta-precio").value);
+    const garantiaDias = Number(document.getElementById("venta-garantia").value);
+    const fechaVenta = document.getElementById("venta-fecha").value;
+    const canalVenta = document.getElementById("venta-canal").value;
+
+    if (!idClienteExistente && (!clienteNuevo || !clienteNuevo.nombre)) {
+      errorEl.textContent = "Selecciona un cliente o cargá uno nuevo con nombre.";
+      errorEl.hidden = false;
+      return;
+    }
+    if (!precioVenta || precioVenta <= 0) {
+      errorEl.textContent = "Ingresá un precio de venta valido.";
+      errorEl.hidden = false;
+      return;
+    }
+
+    try {
+      await Api.registrarVenta(e.id_equipo, e.version, idClienteExistente, clienteNuevo, precioVenta, garantiaDias, fechaVenta, canalVenta);
+      fondo.remove();
+      renderFichaEquipo(document.getElementById("app-contenido"), e.id_equipo);
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.hidden = false;
+    }
+  });
+}
+
+function abrirModalEntregar(ficha) {
+  const e = ficha.equipo;
+  const fondo = document.createElement("div");
+  fondo.className = "modal-fondo";
+  fondo.innerHTML = `
+    <div class="modal-caja">
+      <h3>Entregar equipo - ${e.id_equipo}</h3>
+      <p>Confirma que el cliente ya recibió el equipo. El período de garantía arranca automáticamente en este momento.</p>
+      <p id="entregar-error" class="modal-error" hidden></p>
+      <div class="modal-botones">
+        <button id="entregar-cancelar">Cancelar</button>
+        <button id="entregar-confirmar">Confirmar entrega</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(fondo);
+
+  document.getElementById("entregar-cancelar").addEventListener("click", () => fondo.remove());
+
+  document.getElementById("entregar-confirmar").addEventListener("click", async () => {
+    const errorEl = document.getElementById("entregar-error");
+    try {
+      await Api.entregarEquipo(e.id_equipo, e.version);
+      fondo.remove();
+      renderFichaEquipo(document.getElementById("app-contenido"), e.id_equipo);
     } catch (err) {
       errorEl.textContent = err.message;
       errorEl.hidden = false;
