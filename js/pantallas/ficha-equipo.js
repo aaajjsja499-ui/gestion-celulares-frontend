@@ -66,14 +66,14 @@ function pintarFicha(contenedor, ficha, diagnosticosPrevios) {
 
     <details class="ficha-seccion" ${ficha.venta ? "open" : ""}>
       <summary>Venta y Garantía</summary>
-      ${pintarVenta(ficha.venta)}
+      ${pintarVenta(ficha.venta, e)}
     </details>
   `;
 
   pintarPanelAcciones(ficha);
 }
 
-function pintarVenta(venta) {
+function pintarVenta(venta, equipo) {
   if (!venta) {
     return '<p class="ficha-seccion-deshabilitada">Este equipo todavía no se vendió.</p>';
   }
@@ -83,6 +83,42 @@ function pintarVenta(venta) {
     <p>Cliente: ${venta.cliente}</p>
     <p>Canal: ${venta.canal_venta || "-"}</p>
     <p>Garantía: ${venta.garantia_dias} días - Estado: ${venta.estado_garantia || "Aún no entregado"}</p>
+    ${pintarRentabilidad(venta, equipo)}
+  `;
+}
+
+/**
+ * Fase 3, Pieza 3: Rentabilidad Real (PT-08 - Diseño Técnico Sección
+ * 4.3). Calculo 100% en frontend, con los datos que la ficha ya
+ * carga (Equipos.precio_compra, Equipos.costo_reparacion_total,
+ * Ventas.precio_venta) - no requiere ningun endpoint nuevo.
+ *
+ * otrosGastos de la formula del Diseño Tecnico queda en 0: no existe
+ * hoy un campo de "otros gastos" por equipo individual (la hoja
+ * Gastos_Operativos es a nivel negocio completo, para H-07, no por
+ * unidad). Hueco de diseño senalado, no resuelto en silencio - ver
+ * nota en Contexto de Sesion.
+ */
+function pintarRentabilidad(venta, equipo) {
+  const precioVenta = Number(venta.precio_venta || 0);
+  if (!precioVenta) return "";
+
+  const precioCompra = Number(equipo.precio_compra || 0);
+  const costoReparacionTotal = Number(equipo.costo_reparacion_total || 0);
+  const otrosGastos = 0; // sin fuente de datos por equipo todavia - ver nota arriba
+
+  const costoTotal = precioCompra + costoReparacionTotal + otrosGastos;
+  const gananciaNeta = precioVenta - costoTotal;
+  const margen = (gananciaNeta / precioVenta) * 100;
+
+  return `
+    <div class="ficha-rentabilidad">
+      <p><strong>Rentabilidad (PT-08)</strong></p>
+      <p>Costo total: ${formatearGuaranies(costoTotal)}
+        (compra ${formatearGuaranies(precioCompra)} + reparaciones ${formatearGuaranies(costoReparacionTotal)})</p>
+      <p>Ganancia neta: ${formatearGuaranies(gananciaNeta)}</p>
+      <p>Margen: ${margen.toFixed(1)}%</p>
+    </div>
   `;
 }
 
