@@ -153,6 +153,12 @@ const Api = (() => {
     return llamar("entregarEquipo", { idEquipo, versionEquipo });
   }
 
+  // Fase 3, Pieza 2: Panel de Garantias. Solo lectura - dias
+  // restantes ya vienen calculados desde el servidor.
+  async function obtenerEquiposEnGarantia() {
+    return llamar("obtenerEquiposEnGarantia");
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -172,5 +178,6 @@ const Api = (() => {
     obtenerDatosVenta,
     registrarVenta,
     entregarEquipo,
+    obtenerEquiposEnGarantia,
   };
 })();
