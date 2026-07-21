@@ -88,6 +88,40 @@ const Api = (() => {
     return llamar("obtenerConfiguracion");
   }
 
+  // --- Fase 2 (Reparaciones) ---
+
+  // Cola de equipos en "En reparacion" o "Esperando repuestos", con
+  // su reparacion abierta asociada (si ya se tomo) y los repuestos
+  // disponibles para el formulario de completar.
+  async function obtenerColaReparaciones() {
+    return llamar("obtenerColaReparaciones");
+  }
+
+  // Crea la fila de Reparaciones (fecha_inicio, tecnico = sesion
+  // actual). No transiciona el equipo.
+  async function iniciarReparacion(idEquipo) {
+    return llamar("iniciarReparacion", { idEquipo });
+  }
+
+  // Cierra la reparacion: descuenta stock de Repuestos, calcula
+  // costo_mano_obra, y transiciona el equipo segun el resultado.
+  async function completarReparacion(idReparacion, version, tiempoInvertidoMin, repuestosUsados, resultado, comentario) {
+    return llamar("completarReparacion", {
+      idReparacion,
+      version,
+      tiempoInvertidoMin,
+      repuestosUsados,
+      resultado,
+      comentario,
+    });
+  }
+
+  // Transiciona el equipo a "Esperando repuestos" sin cerrar la
+  // reparacion.
+  async function pausarPorRepuesto(idReparacion, versionEquipo, comentario) {
+    return llamar("pausarPorRepuesto", { idReparacion, versionEquipo, comentario });
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -99,5 +133,9 @@ const Api = (() => {
     guardarDiagnostico,
     obtenerDiagnosticosEquipo,
     obtenerConfiguracion,
+    obtenerColaReparaciones,
+    iniciarReparacion,
+    completarReparacion,
+    pausarPorRepuesto,
   };
 })();
