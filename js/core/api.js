@@ -128,6 +128,19 @@ const Api = (() => {
     return llamar("obtenerClientes");
   }
 
+  // Fase 3, Directorio de Clientes (Especificacion 4.10).
+  async function obtenerFichaCliente(idCliente) {
+    return llamar("obtenerFichaCliente", { idCliente });
+  }
+
+  async function crearCliente(nombre, contacto, notas) {
+    return llamar("crearCliente", { nombre, contacto, notas });
+  }
+
+  async function actualizarCliente(idCliente, nombre, contacto, notas) {
+    return llamar("actualizarCliente", { idCliente, nombre, contacto, notas });
+  }
+
   // Referencias de precio (Diseno Tecnico 4.11): valor de mercado y
   // costo total, sin forzar una sola formula.
   async function obtenerDatosVenta(idEquipo) {
@@ -175,6 +188,9 @@ const Api = (() => {
     completarReparacion,
     pausarPorRepuesto,
     obtenerClientes,
+    obtenerFichaCliente,
+    crearCliente,
+    actualizarCliente,
     obtenerDatosVenta,
     registrarVenta,
     entregarEquipo,
