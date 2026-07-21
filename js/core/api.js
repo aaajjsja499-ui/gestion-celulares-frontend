@@ -122,6 +122,37 @@ const Api = (() => {
     return llamar("pausarPorRepuesto", { idReparacion, versionEquipo, comentario });
   }
 
+  // --- Fase 3 (Ventas, Clientes y Garantias) ---
+
+  async function obtenerClientes() {
+    return llamar("obtenerClientes");
+  }
+
+  // Referencias de precio (Diseno Tecnico 4.11): valor de mercado y
+  // costo total, sin forzar una sola formula.
+  async function obtenerDatosVenta(idEquipo) {
+    return llamar("obtenerDatosVenta", { idEquipo });
+  }
+
+  async function registrarVenta(idEquipo, versionEquipo, idClienteExistente, clienteNuevo, precioVenta, garantiaDias, fechaVenta, canalVenta) {
+    return llamar("registrarVenta", {
+      idEquipo,
+      versionEquipo,
+      idClienteExistente,
+      clienteNuevo,
+      precioVenta,
+      garantiaDias,
+      fechaVenta,
+      canalVenta,
+    });
+  }
+
+  // Vendido -> Entregado -> En garantia (automatico), en una sola
+  // llamada.
+  async function entregarEquipo(idEquipo, versionEquipo) {
+    return llamar("entregarEquipo", { idEquipo, versionEquipo });
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -137,5 +168,9 @@ const Api = (() => {
     iniciarReparacion,
     completarReparacion,
     pausarPorRepuesto,
+    obtenerClientes,
+    obtenerDatosVenta,
+    registrarVenta,
+    entregarEquipo,
   };
 })();
