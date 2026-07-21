@@ -5,8 +5,9 @@
 // Configuracion), y alta de equipo nuevo ("Nuevo equipo detectado").
 // Reemplaza la pantalla de prueba de conectividad de Fase 0 (ya
 // cerrada y verificada - ver Indice Maestro v2.8).
-// Ventas del mes, garantias, stock de repuestos, capital de trabajo
-// y el panel ampliado son de fases posteriores (RG-01).
+// Ventas del mes, stock de repuestos, capital de trabajo y el panel
+// ampliado son de fases posteriores (RG-01). El Panel de Garantías
+// (Fase 3, Pieza 2) ya existe en #ventas - link agregado abajo.
 
 async function renderDashboard(contenedor) {
   contenedor.innerHTML = `<p>Cargando dashboard...</p>`;
@@ -32,7 +33,8 @@ function pintarDashboard(contenedor, datos) {
     <h2>Dashboard</h2>
     <p>
       <a href="#equipos">Ver listado completo de equipos &rarr;</a> ·
-      <a href="#diagnosticos">Iniciar diagnóstico &rarr;</a>
+      <a href="#diagnosticos">Iniciar diagnóstico &rarr;</a> ·
+      <a href="#ventas">Ventas y Garantías &rarr;</a>
     </p>
 
     ${puedeCrear ? '<button id="boton-nuevo-equipo">+ Nuevo equipo detectado</button>' : ""}
