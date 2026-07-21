@@ -80,7 +80,7 @@ function pintarVenta(venta, equipo) {
   return `
     <p>Venta ${venta.id_venta} - Fecha: ${formatearFecha(venta.fecha_venta)}</p>
     <p>Precio: ${formatearGuaranies(venta.precio_venta)}</p>
-    <p>Cliente: ${venta.cliente}</p>
+    <p>Cliente: <a href="#clientes/${venta.cliente}">${venta.cliente}</a></p>
     <p>Canal: ${venta.canal_venta || "-"}</p>
     <p>Garantía: ${venta.garantia_dias} días - Estado: ${venta.estado_garantia || "Aún no entregado"}</p>
     ${pintarRentabilidad(venta, equipo)}
@@ -89,35 +89,30 @@ function pintarVenta(venta, equipo) {
 
 /**
  * Fase 3, Pieza 3: Rentabilidad Real (PT-08 - Diseño Técnico Sección
- * 4.3). Calculo 100% en frontend, con los datos que la ficha ya
- * carga (Equipos.precio_compra, Equipos.costo_reparacion_total,
- * Ventas.precio_venta) - no requiere ningun endpoint nuevo.
- *
- * otrosGastos de la formula del Diseño Tecnico queda en 0: no existe
- * hoy un campo de "otros gastos" por equipo individual (la hoja
- * Gastos_Operativos es a nivel negocio completo, para H-07, no por
- * unidad). Hueco de diseño senalado, no resuelto en silencio - ver
- * nota en Contexto de Sesion.
+ * 4.3). El calculo vive en js/calculos/rentabilidad.js (mismo patron
+ * que Valoracion para PT-04) - esta funcion solo arma el HTML con el
+ * resultado.
  */
 function pintarRentabilidad(venta, equipo) {
   const precioVenta = Number(venta.precio_venta || 0);
   if (!precioVenta) return "";
 
-  const precioCompra = Number(equipo.precio_compra || 0);
-  const costoReparacionTotal = Number(equipo.costo_reparacion_total || 0);
-  const otrosGastos = 0; // sin fuente de datos por equipo todavia - ver nota arriba
-
-  const costoTotal = precioCompra + costoReparacionTotal + otrosGastos;
-  const gananciaNeta = precioVenta - costoTotal;
-  const margen = (gananciaNeta / precioVenta) * 100;
+  const r = Rentabilidad.calcularRentabilidadReal({
+    precioVenta,
+    precioCompra: equipo.precio_compra,
+    costoReparacionTotal: equipo.costo_reparacion_total,
+    // otrosGastos: sin fuente de datos por equipo todavia (ver
+    // comentario en js/calculos/rentabilidad.js) - se usa el
+    // default 0 del modulo.
+  });
 
   return `
     <div class="ficha-rentabilidad">
       <p><strong>Rentabilidad (PT-08)</strong></p>
-      <p>Costo total: ${formatearGuaranies(costoTotal)}
-        (compra ${formatearGuaranies(precioCompra)} + reparaciones ${formatearGuaranies(costoReparacionTotal)})</p>
-      <p>Ganancia neta: ${formatearGuaranies(gananciaNeta)}</p>
-      <p>Margen: ${margen.toFixed(1)}%</p>
+      <p>Costo total: ${formatearGuaranies(r.costoTotal)}
+        (compra ${formatearGuaranies(r.precioCompra)} + reparaciones ${formatearGuaranies(r.costoReparacionTotal)})</p>
+      <p>Ganancia neta: ${formatearGuaranies(r.gananciaNeta)}</p>
+      <p>Margen: ${r.margen.toFixed(1)}%</p>
     </div>
   `;
 }
