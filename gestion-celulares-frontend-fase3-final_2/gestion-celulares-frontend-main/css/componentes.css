@@ -1,0 +1,230 @@
+/* Listado de Equipos (Fase 1) */
+
+.equipos-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em;
+  margin-bottom: 1em;
+  align-items: center;
+}
+
+.equipos-filtros input[type="text"] {
+  flex: 1 1 220px;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.equipos-filtros select,
+.equipos-filtros input[type="date"] {
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.equipos-filtros label {
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.fila-estado-positivo {
+  background: #eaf7ea;
+}
+
+.fila-estado-atencion {
+  background: #fdf1e3;
+}
+
+.fila-estado-cerrado {
+  background: #f0f0f0;
+  color: #888;
+}
+
+#equipos-paginacion {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  margin-top: 0.8em;
+}
+
+#equipos-paginacion button {
+  padding: 0.4em 0.9em;
+  border: none;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #fff;
+}
+
+#equipos-paginacion button:disabled {
+  background: #ccc;
+  color: #888;
+}
+
+/* Dashboard real (Fase 1) */
+
+.tarjetas-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8em;
+  margin: 1em 0;
+}
+
+.tarjeta-resumen {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.8em 1.2em;
+  min-width: 120px;
+  text-align: center;
+}
+
+.tarjeta-numero {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.tarjeta-etiqueta {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.lista-alertas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lista-alertas li {
+  background: #fdf1e3;
+  border-radius: 6px;
+  padding: 0.6em 1em;
+  margin-bottom: 0.4em;
+}
+
+#boton-nuevo-equipo {
+  padding: 0.6em 1.2em;
+  border: none;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #fff;
+  font-weight: 600;
+  margin: 0.5em 0 1em 0;
+}
+
+/* Modales (usados en toda la app: transiciones, alta de equipo,
+   diagnostico, reparaciones, ventas, entrega). Nunca tuvieron CSS -
+   causa raiz del "no pasa nada" al hacer click, encontrada por
+   Claude Code el 21 de Julio de 2026. Sin position: fixed, el modal
+   se insertaba al final del <body> en el flujo normal del
+   documento, fuera de la vista. */
+
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.modal-caja {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5em;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.modal-caja h3 {
+  margin-top: 0;
+}
+
+.modal-caja label {
+  display: block;
+  margin-top: 0.9em;
+  margin-bottom: 0.3em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-caja input[type="text"],
+.modal-caja input[type="number"],
+.modal-caja input[type="date"],
+.modal-caja textarea,
+.modal-caja select {
+  width: 100%;
+  padding: 0.55em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.modal-caja textarea {
+  resize: vertical;
+}
+
+.modal-error {
+  display: block;
+  color: #c0392b;
+  background: #fdeceb;
+  border-radius: 6px;
+  padding: 0.5em 0.7em;
+  margin-top: 0.8em;
+  font-size: 0.85rem;
+}
+
+.modal-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6em;
+  margin-top: 1.4em;
+}
+
+.modal-botones button {
+  padding: 0.55em 1.1em;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.modal-botones button:first-child {
+  background: #eee;
+  color: #333;
+}
+
+.modal-botones button:last-child {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+/* Filas de repuesto dentro del modal de Completar Reparacion */
+.completar-fila-repuesto {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  margin-top: 0.5em;
+}
+
+.completar-fila-repuesto .repuesto-select {
+  flex: 1 1 auto;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+#venta-cliente-nuevo {
+  margin-top: 0.5em;
+  padding: 0.6em;
+  background: #f7f7f8;
+  border-radius: 6px;
+}

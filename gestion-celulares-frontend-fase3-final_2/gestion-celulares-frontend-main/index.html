@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Gestion de Celulares</title>
+
+  <link rel="stylesheet" href="css/base.css?v=20260717a" />
+  <link rel="stylesheet" href="css/layout.css?v=20260717a" />
+  <link rel="stylesheet" href="css/componentes.css?v=20260717a" />
+  <link rel="stylesheet" href="css/tema-oscuro.css?v=20260717a" />
+</head>
+<body>
+
+  <header id="app-header" hidden>
+    <strong id="app-titulo">Gestion de Celulares</strong>
+    <span id="app-usuario"></span>
+  </header>
+
+  <main id="login-pantalla">
+    <h1>Gestion de Celulares</h1>
+    <p>Iniciá sesión con tu email y PIN para continuar.</p>
+    <form id="form-login">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" name="email" required autocomplete="username" />
+
+      <label for="login-pin">PIN</label>
+      <input type="password" id="login-pin" name="pin" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" required autocomplete="current-password" />
+
+      <button type="submit">Ingresar</button>
+    </form>
+    <p id="login-error" hidden></p>
+  </main>
+
+  <main id="app-contenido" hidden></main>
+
+  <!-- config.js va primero: todo lo demas depende de CONFIG -->
+  <script src="config.js?v=20260717a"></script>
+
+  <!-- core: orden importa, cada uno depende del anterior -->
+  <script src="js/core/estado.js?v=20260717a"></script>
+  <script src="js/core/cache.js?v=20260717a"></script>
+  <script src="js/core/api.js?v=20260717a"></script>
+  <script src="js/core/auth.js?v=20260717a"></script>
+  <script src="js/core/router.js?v=20260717a"></script>
+
+  <script src="js/utils.js?v=20260717a"></script>
+
+  <!-- calculos -->
+  <script src="js/calculos/valoracion.js?v=20260717a"></script>
+  <script src="js/calculos/viabilidad.js?v=20260717a"></script>
+  <script src="js/calculos/rentabilidad.js?v=20260717a"></script>
+  <script src="js/calculos/alertas.js?v=20260717a"></script>
+
+  <!-- pantallas: cada una se auto-registra en el Router al cargar -->
+  <script src="js/pantallas/dashboard.js?v=20260717a"></script>
+  <script src="js/pantallas/equipos.js?v=20260717a"></script>
+  <script src="js/pantallas/ficha-equipo.js?v=20260717a"></script>
+  <script src="js/pantallas/viabilidad-consulta.js?v=20260717a"></script>
+  <script src="js/pantallas/diagnosticos.js?v=20260717a"></script>
+  <script src="js/pantallas/reparaciones.js?v=20260717a"></script>
+  <script src="js/pantallas/repuestos.js?v=20260717a"></script>
+  <script src="js/pantallas/ventas.js?v=20260717a"></script>
+  <script src="js/pantallas/catalogo.js?v=20260717a"></script>
+  <script src="js/pantallas/decisiones.js?v=20260717a"></script>
+  <script src="js/pantallas/clientes.js?v=20260717a"></script>
+
+  <script>
+    // Arranque de la app: mientras no haya login, solo se ve
+    // #login-pantalla. Tras el login, se muestra el header y el
+    // contenido, y arranca el router.
+    Auth.iniciar();
+
+    document.addEventListener("gestion-celulares:login-ok", () => {
+      const { usuario } = Estado.get();
+      document.getElementById("login-pantalla").hidden = true;
+      document.getElementById("app-header").hidden = false;
+      document.getElementById("app-contenido").hidden = false;
+      document.getElementById("app-usuario").textContent =
+        usuario.nombre + " (" + usuario.roles.join(", ") + ")";
+      Router.iniciar();
+    });
+  </script>
+
+</body>
+</html>
