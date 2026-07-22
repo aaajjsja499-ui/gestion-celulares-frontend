@@ -181,7 +181,8 @@ function abrirModalCliente(clienteExistente, alGuardar) {
 
   document.getElementById("cliente-cancelar").addEventListener("click", () => fondo.remove());
 
-  document.getElementById("cliente-guardar").addEventListener("click", async () => {
+  const botonGuardar = document.getElementById("cliente-guardar");
+  botonGuardar.addEventListener("click", async () => {
     const errorEl = document.getElementById("cliente-error");
     const nombre = document.getElementById("cliente-nombre").value.trim();
     const contacto = document.getElementById("cliente-contacto").value.trim();
@@ -192,6 +193,15 @@ function abrirModalCliente(clienteExistente, alGuardar) {
       errorEl.hidden = false;
       return;
     }
+
+    // Evita doble-envio: si el click anterior todavia esta en curso
+    // (red lenta, mobile), este click no dispara una segunda
+    // llamada. Sin esto, un segundo click mientras la primera
+    // peticion sigue pendiente crea el cliente duplicado.
+    if (botonGuardar.disabled) return;
+    botonGuardar.disabled = true;
+    const textoOriginal = botonGuardar.textContent;
+    botonGuardar.textContent = "Guardando...";
 
     try {
       if (esEdicion) {
@@ -204,6 +214,8 @@ function abrirModalCliente(clienteExistente, alGuardar) {
     } catch (err) {
       errorEl.textContent = err.message;
       errorEl.hidden = false;
+      botonGuardar.disabled = false;
+      botonGuardar.textContent = textoOriginal;
     }
   });
 }

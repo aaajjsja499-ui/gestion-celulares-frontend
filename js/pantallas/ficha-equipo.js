@@ -164,7 +164,8 @@ function abrirModalTransicion(ficha, estadoNuevo) {
 
   document.getElementById("modal-cancelar").addEventListener("click", () => fondo.remove());
 
-  document.getElementById("modal-confirmar").addEventListener("click", async () => {
+  const botonConfirmar = document.getElementById("modal-confirmar");
+  botonConfirmar.addEventListener("click", async () => {
     const comentario = document.getElementById("modal-comentario").value.trim();
     const errorEl = document.getElementById("modal-error");
 
@@ -174,6 +175,11 @@ function abrirModalTransicion(ficha, estadoNuevo) {
       return;
     }
 
+    if (botonConfirmar.disabled) return;
+    botonConfirmar.disabled = true;
+    const textoOriginal = botonConfirmar.textContent;
+    botonConfirmar.textContent = "Confirmando...";
+
     try {
       await Api.transicionarEquipo(ficha.equipo.id_equipo, ficha.equipo.version, estadoNuevo, comentario);
       fondo.remove();
@@ -182,6 +188,8 @@ function abrirModalTransicion(ficha, estadoNuevo) {
     } catch (err) {
       errorEl.textContent = err.message;
       errorEl.hidden = false;
+      botonConfirmar.disabled = false;
+      botonConfirmar.textContent = textoOriginal;
     }
   });
 }
@@ -272,7 +280,8 @@ async function abrirModalVenta(ficha) {
     document.getElementById("venta-referencias").textContent = "No se pudieron cargar las referencias: " + err.message;
   }
 
-  document.getElementById("venta-confirmar").addEventListener("click", async () => {
+  const botonVenta = document.getElementById("venta-confirmar");
+  botonVenta.addEventListener("click", async () => {
     const errorEl = document.getElementById("venta-error");
     const idClienteExistente = selectCliente.value && selectCliente.value !== "__nuevo__" ? selectCliente.value : null;
     const clienteNuevo =
@@ -298,6 +307,11 @@ async function abrirModalVenta(ficha) {
       return;
     }
 
+    if (botonVenta.disabled) return;
+    botonVenta.disabled = true;
+    const textoOriginal = botonVenta.textContent;
+    botonVenta.textContent = "Registrando...";
+
     try {
       await Api.registrarVenta(e.id_equipo, e.version, idClienteExistente, clienteNuevo, precioVenta, garantiaDias, fechaVenta, canalVenta);
       fondo.remove();
@@ -305,6 +319,8 @@ async function abrirModalVenta(ficha) {
     } catch (err) {
       errorEl.textContent = err.message;
       errorEl.hidden = false;
+      botonVenta.disabled = false;
+      botonVenta.textContent = textoOriginal;
     }
   });
 }
@@ -328,8 +344,15 @@ function abrirModalEntregar(ficha) {
 
   document.getElementById("entregar-cancelar").addEventListener("click", () => fondo.remove());
 
-  document.getElementById("entregar-confirmar").addEventListener("click", async () => {
+  const botonEntregar = document.getElementById("entregar-confirmar");
+  botonEntregar.addEventListener("click", async () => {
     const errorEl = document.getElementById("entregar-error");
+
+    if (botonEntregar.disabled) return;
+    botonEntregar.disabled = true;
+    const textoOriginal = botonEntregar.textContent;
+    botonEntregar.textContent = "Confirmando...";
+
     try {
       await Api.entregarEquipo(e.id_equipo, e.version);
       fondo.remove();
@@ -337,6 +360,8 @@ function abrirModalEntregar(ficha) {
     } catch (err) {
       errorEl.textContent = err.message;
       errorEl.hidden = false;
+      botonEntregar.disabled = false;
+      botonEntregar.textContent = textoOriginal;
     }
   });
 }
