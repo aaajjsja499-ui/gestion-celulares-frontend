@@ -228,3 +228,69 @@
   background: #f7f7f8;
   border-radius: 6px;
 }
+
+/* Consulta de Viabilidad (Fase 5, PT-09) */
+
+#viabilidad-buscador {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.55em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 0.3em;
+}
+
+.viabilidad-lista-sugerencias {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1em 0;
+  max-width: 420px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.viabilidad-lista-sugerencias li {
+  padding: 0.5em 0.8em;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.viabilidad-lista-sugerencias li:last-child {
+  border-bottom: none;
+}
+
+.viabilidad-lista-sugerencias li:hover {
+  background: #f0f0f0;
+}
+
+.viabilidad-semaforo {
+  border-radius: 8px;
+  padding: 1em 1.2em;
+  margin: 1em 0;
+  max-width: 420px;
+}
+
+.viabilidad-viable {
+  background: #eaf7ea;
+}
+
+.viabilidad-precaucion {
+  background: #fdf1e3;
+}
+
+.viabilidad-no-viable {
+  background: #fdeceb;
+}
+
+.viabilidad-recomendacion {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.viabilidad-porcentaje {
+  font-size: 1rem;
+  margin: 0.3em 0 0 0;
+}
