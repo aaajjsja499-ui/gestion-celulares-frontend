@@ -20,12 +20,16 @@
 // nunca en silencio.
 //
 // Fase 5 (Viabilidad, v3.24 del Indice Maestro): renderCatalogo ahora
-// acepta un parametro de ruta opcional. Si llega "nuevo" (desde
-// "Agregar modelo al catalogo" en Consulta de Viabilidad, cuando el
-// modelo buscado no existe todavia), se preabre el modal de alta
-// automaticamente - reutiliza el modal existente, no crea un segundo
-// mecanismo. Sin efecto si el rol actual no es Administrador (mismo
-// criterio que el boton "+ Nuevo modelo").
+// acepta un parametro de ruta opcional. Si llega "nuevo" (sin datos,
+// forma historica) se preabre el modal de alta en blanco. Si llega
+// "marca|modelo" codificado (backlog item 19, v3.29 del Indice
+// Maestro - mismo formato que usa dashboard.js para "Registrar equipo
+// de este modelo", ver codificarParametroViabilidad en
+// viabilidad-consulta.js) se preabre el modal de alta con marca y
+// modelo precargados pero editables. En ambos casos reutiliza el
+// modal existente, no crea un segundo mecanismo, y no tiene efecto si
+// el rol actual no es Administrador (mismo criterio que el boton
+// "+ Nuevo modelo").
 
 let catalogoEstado = { todos: [], equipos: [], diagnosticos: null, configuracion: null, filtros: { marca: "", gama: "", estadoComercial: "" } };
 
@@ -49,9 +53,6 @@ async function renderCatalogo(contenedor, parametroRuta) {
     catalogoEstado.configuracion = configuracion;
     catalogoEstado.filtros = { marca: "", gama: "", estadoComercial: "" };
 
-    // H-05 necesita diagnosticos de todos los equipos. Operacion
-    // opcional: si todavia no existe en el backend, la pantalla sigue
-    // funcionando sin el aviso (ver nota de cabecera del archivo).
     try {
       catalogoEstado.diagnosticos = (Api.obtenerDiagnosticosTodos)
         ? await Api.obtenerDiagnosticosTodos()
@@ -63,11 +64,18 @@ async function renderCatalogo(contenedor, parametroRuta) {
 
     pintarCatalogo(contenedor);
 
-    if (parametroRuta === "nuevo") {
+    if (parametroRuta) {
       const usuario = Estado.get().usuario;
       const esAdmin = !!(usuario && usuario.roles.includes("Administrador"));
       if (esAdmin) {
-        abrirModalModelo(null, () => renderCatalogo(contenedor));
+        let datosPrefill = null;
+        if (parametroRuta !== "nuevo") {
+          const [marcaPre, modeloPre] = parametroRuta.split("|").map((valor) => decodeURIComponent(valor || ""));
+          if (marcaPre || modeloPre) {
+            datosPrefill = { marca: marcaPre, modelo: modeloPre };
+          }
+        }
+        abrirModalModelo(null, () => renderCatalogo(contenedor), datosPrefill);
       }
     }
   } catch (err) {
@@ -181,13 +189,6 @@ function pintarTablaCatalogo(esAdmin) {
   });
 }
 
-// Indicador de margen promedio (Especificacion 4.8, parrafo 3):
-// ventas historicas de ese modelo comparadas contra su valor de
-// mercado de catalogo. Distinto de rentabilidadReal (H-05, Diseno
-// Tecnico Seccion 4.8), que compara contra el costo total del
-// equipo, no contra el valor de mercado - se muestran ambos para no
-// mezclar dos preguntas distintas ("¿vendo cerca del precio de
-// mercado?" vs "¿me deja margen sobre lo que invertí?").
 function calcularEstadisticasModelo(modelo) {
   const equiposVendidos = catalogoEstado.equipos.filter(
     (e) => e.marca === modelo.marca && e.modelo === modelo.modelo && e.precio_venta
@@ -227,9 +228,6 @@ function calcularEstadisticasModelo(modelo) {
   return { margenPromedio, rentabilidadReal, tasaFalla, cantidadVentas: ventasConCosto.length };
 }
 
-// H-05 (Diseno Tecnico Seccion 4.8): aviso visual, nunca cambia el
-// catalogo solo. Requiere Configuracion.umbral_tasa_falla,
-// Configuracion.ventas_minimas_evaluacion y Configuracion.margen_minimo.
 function evaluarAlertaH05(stats, configuracion) {
   if (!configuracion) return false;
   if (stats.tasaFalla !== null && configuracion.umbral_tasa_falla && stats.tasaFalla > Number(configuracion.umbral_tasa_falla)) {
@@ -249,9 +247,10 @@ function evaluarAlertaH05(stats, configuracion) {
 
 // --- Modal de alta / edicion ---
 
-function abrirModalModelo(modeloExistente, alGuardar) {
+function abrirModalModelo(modeloExistente, alGuardar, datosPrefill) {
   const esEdicion = !!modeloExistente;
   const m = modeloExistente || {};
+  const prefill = datosPrefill || {};
 
   const fondo = document.createElement("div");
   fondo.className = "modal-fondo";
@@ -260,10 +259,10 @@ function abrirModalModelo(modeloExistente, alGuardar) {
       <h3>${esEdicion ? "Editar modelo" : "Nuevo modelo"}</h3>
 
       <label for="modelo-marca">Marca</label>
-      <input type="text" id="modelo-marca" value="${esEdicion ? m.marca : ""}" ${esEdicion ? "disabled" : ""} />
+      <input type="text" id="modelo-marca" value="${esEdicion ? m.marca : escaparAtributoCatalogo(prefill.marca || "")}" ${esEdicion ? "disabled" : ""} />
 
       <label for="modelo-modelo">Modelo</label>
-      <input type="text" id="modelo-modelo" value="${esEdicion ? m.modelo : ""}" ${esEdicion ? "disabled" : ""} />
+      <input type="text" id="modelo-modelo" value="${esEdicion ? m.modelo : escaparAtributoCatalogo(prefill.modelo || "")}" ${esEdicion ? "disabled" : ""} />
 
       ${!esEdicion ? `
       <label for="modelo-año">Año</label>
@@ -340,9 +339,6 @@ function abrirModalModelo(modeloExistente, alGuardar) {
   `;
   document.body.appendChild(fondo);
 
-  // Preseleccionar valores actuales en los <select> (edicion) o
-  // defaults razonables (alta - todo "disponible/facil/activo" hasta
-  // que Pedro diga lo contrario, nunca "No comprar" por defecto).
   seleccionarValorCatalogo("modelo-gama", m.gama || "Media");
   seleccionarValorCatalogo("modelo-demanda", m.demanda || "Media");
   seleccionarValorCatalogo("modelo-facilidad-repuestos", m.facilidad_repuestos || "Media");
