@@ -172,6 +172,58 @@ const Api = (() => {
     return llamar("obtenerEquiposEnGarantia");
   }
 
+  // --- Catalogo de Modelos (Especificacion 4.8) ---
+
+  // Alta de modelo. Cada campo de datos ademas de comentario (Diseno
+  // Tecnico 3.9). El backend registra la entrada en Decisiones con
+  // categoria "Modelos" (Especificacion 4.8).
+  async function crearModelo(datos) {
+    return llamar("crearModelo", datos);
+  }
+
+  // Edicion de un modelo existente, identificado por marca+modelo (la
+  // hoja Modelos no tiene columna id propia - Diseno Tecnico 3.9).
+  // Solo los campos que el Administrador puede tocar desde la app
+  // (Especificacion 4.8). comentario es obligatorio y genera la
+  // entrada en Decisiones.
+  async function actualizarModelo(marca, modelo, cambios, comentario) {
+    return llamar("actualizarModelo", { marca, modelo, cambios, comentario });
+  }
+
+  // Diagnosticos de TODOS los equipos, sin filtrar por id_equipo -
+  // necesario para calcular tasaFalla por modelo (H-05, Diseno
+  // Tecnico Seccion 4.8). Operacion nueva, todavia no implementada en
+  // el backend a la fecha de este archivo (ver Indice Maestro) - se
+  // deja declarada aca para que catalogo.js la use apenas exista;
+  // mientras tanto catalogo.js detecta su ausencia y sigue
+  // funcionando sin el aviso H-05.
+  async function obtenerDiagnosticosTodos() {
+    return llamar("obtenerDiagnosticosTodos");
+  }
+
+  // --- Inventario de Repuestos (Especificacion 4.6) ---
+
+  async function obtenerRepuestos() {
+    return llamar("obtenerRepuestos");
+  }
+
+  async function crearRepuesto(datos) {
+    return llamar("crearRepuesto", datos);
+  }
+
+  // No borra filas (Especificacion 4.6): tambien se usa para marcar
+  // un repuesto como Inactivo en vez de eliminarlo.
+  async function actualizarRepuesto(idRepuesto, cambios) {
+    return llamar("actualizarRepuesto", { idRepuesto, cambios });
+  }
+
+  // Ajuste manual de stock con motivo (compra / perdida / correccion).
+  // El backend registra el movimiento en Movimientos_Repuestos y
+  // actualiza stock_actual en la misma operacion (Especificacion 4.6).
+  async function ajustarStockRepuesto(idRepuesto, cantidad, motivo, comentario) {
+    return llamar("ajustarStockRepuesto", { idRepuesto, cantidad, motivo, comentario });
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -195,5 +247,12 @@ const Api = (() => {
     registrarVenta,
     entregarEquipo,
     obtenerEquiposEnGarantia,
+    crearModelo,
+    actualizarModelo,
+    obtenerDiagnosticosTodos,
+    obtenerRepuestos,
+    crearRepuesto,
+    actualizarRepuesto,
+    ajustarStockRepuesto,
   };
 })();
