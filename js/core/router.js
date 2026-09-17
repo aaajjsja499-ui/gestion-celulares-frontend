@@ -28,7 +28,7 @@ const Router = (() => {
     if (!contenedor) return;
 
     if (!funcionRender) {
-      contenedor.innerHTML = `<p>Pantalla "${ruta}" todavia no implementada.</p>`;
+      contenedor.innerHTML = `<p>Pantalla "${ruta}" todavia no implementada.</p><p><a href="#dashboard">&larr; Volver al Dashboard</a></p>`;
       return;
     }
 
