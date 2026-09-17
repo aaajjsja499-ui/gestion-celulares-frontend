@@ -18,6 +18,14 @@
 // pantalla funciona igual (listado, alta, edicion) pero sin el aviso
 // H-05 ni el indicador de margen - se degrada con una nota visible,
 // nunca en silencio.
+//
+// Fase 5 (Viabilidad, v3.24 del Indice Maestro): renderCatalogo ahora
+// acepta un parametro de ruta opcional. Si llega "nuevo" (desde
+// "Agregar modelo al catalogo" en Consulta de Viabilidad, cuando el
+// modelo buscado no existe todavia), se preabre el modal de alta
+// automaticamente - reutiliza el modal existente, no crea un segundo
+// mecanismo. Sin efecto si el rol actual no es Administrador (mismo
+// criterio que el boton "+ Nuevo modelo").
 
 let catalogoEstado = { todos: [], equipos: [], diagnosticos: null, configuracion: null, filtros: { marca: "", gama: "", estadoComercial: "" } };
 
@@ -27,7 +35,7 @@ const CATALOGO_ITEMS_DIAGNOSTICO = [
   "wifi", "bluetooth", "red_movil",
 ];
 
-async function renderCatalogo(contenedor) {
+async function renderCatalogo(contenedor, parametroRuta) {
   contenedor.innerHTML = `<p>Cargando catalogo...</p>`;
 
   try {
@@ -54,6 +62,14 @@ async function renderCatalogo(contenedor) {
     }
 
     pintarCatalogo(contenedor);
+
+    if (parametroRuta === "nuevo") {
+      const usuario = Estado.get().usuario;
+      const esAdmin = !!(usuario && usuario.roles.includes("Administrador"));
+      if (esAdmin) {
+        abrirModalModelo(null, () => renderCatalogo(contenedor));
+      }
+    }
   } catch (err) {
     console.error(err);
     contenedor.innerHTML = `<p>Error al cargar el catalogo: ${err.message}</p>`;
