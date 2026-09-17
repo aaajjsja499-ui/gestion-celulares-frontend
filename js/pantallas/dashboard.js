@@ -34,8 +34,11 @@ function pintarDashboard(contenedor, datos) {
     <p>
       <a href="#equipos">Ver listado completo de equipos &rarr;</a> ·
       <a href="#diagnosticos">Iniciar diagnóstico &rarr;</a> ·
+      <a href="#reparaciones">Cola de Reparaciones &rarr;</a> ·
       <a href="#ventas">Ventas y Garantías &rarr;</a> ·
-      <a href="#clientes">Directorio de Clientes &rarr;</a>
+      <a href="#clientes">Directorio de Clientes &rarr;</a> ·
+      <a href="#catalogo">Catálogo de Modelos &rarr;</a> ·
+      <a href="#repuestos">Inventario de Repuestos &rarr;</a>
     </p>
 
     ${puedeCrear ? '<button id="boton-nuevo-equipo">+ Nuevo equipo detectado</button>' : ""}
