@@ -17,6 +17,19 @@
 // parametro despues de la ruta (router.js), asi que marca y modelo
 // viajan codificados juntos como "marca|modelo" (ver
 // codificarParametroViabilidad).
+//
+// Backlog item 19 (Indice Maestro v3.29): "Agregar modelo al
+// catalogo" no tenia con que modelo prellenar el alta, porque el
+// texto que el usuario escribio en el buscador no calzo con ningun
+// modelo existente (a diferencia de "Registrar equipo de este
+// modelo", que parte de un modelo ya encontrado en viabilidadEstado).
+// Se resuelve partiendo el texto libre del buscador en la primera
+// palabra (marca) y el resto (modelo) - mismo criterio implicito que
+// ya usa el placeholder del buscador ("Marca y modelo (ej. Samsung
+// A14)") y que la propia pantalla usa al mostrar "marca modelo" con
+// un espacio. Los campos quedan editables en el modal de Catalogo,
+// asi que un corte imperfecto (marca con mas de una palabra) lo
+// corrige el usuario ahi mismo antes de guardar.
 
 let viabilidadEstado = { modelos: [], configuracion: null, seleccionado: null };
 
@@ -93,7 +106,7 @@ function buscarModeloViabilidad(texto) {
 
   if (!coincidencias.length) {
     contenedorSugerencias.innerHTML = "";
-    pintarModeloNoEncontrado();
+    pintarModeloNoEncontrado(texto);
     return;
   }
 
@@ -122,14 +135,18 @@ function buscarModeloViabilidad(texto) {
   });
 }
 
-function pintarModeloNoEncontrado() {
+function pintarModeloNoEncontrado(texto) {
   const contenedorResultado = document.getElementById("viabilidad-resultado");
   contenedorResultado.innerHTML = `
     <p>Este modelo no está cargado todavía.</p>
     <button id="viabilidad-agregar-modelo">Agregar modelo al catálogo</button>
   `;
   document.getElementById("viabilidad-agregar-modelo").addEventListener("click", () => {
-    Router.navegar("catalogo", "nuevo");
+    const textoLimpio = (texto || "").trim();
+    const indiceEspacio = textoLimpio.indexOf(" ");
+    const marcaPre = indiceEspacio === -1 ? textoLimpio : textoLimpio.slice(0, indiceEspacio);
+    const modeloPre = indiceEspacio === -1 ? "" : textoLimpio.slice(indiceEspacio + 1).trim();
+    Router.navegar("catalogo", codificarParametroViabilidad(marcaPre, modeloPre));
   });
 }
 
