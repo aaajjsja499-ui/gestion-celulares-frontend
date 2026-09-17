@@ -8,8 +8,15 @@
 // Ventas del mes, stock de repuestos, capital de trabajo y el panel
 // ampliado son de fases posteriores (RG-01). El Panel de Garantías
 // (Fase 3, Pieza 2) ya existe en #ventas - link agregado abajo.
+//
+// Fase 5 (Viabilidad, v3.24 del Indice Maestro): agregado el link a
+// Consulta de Viabilidad, y soporte para recibir un parametro de ruta
+// "marca|modelo" (ver codificarParametroViabilidad en
+// viabilidad-consulta.js) que preabre el modal de alta de equipo con
+// esos datos ya cargados - reutiliza el modal existente en vez de
+// crear un segundo mecanismo de alta.
 
-async function renderDashboard(contenedor) {
+async function renderDashboard(contenedor, parametroRuta) {
   contenedor.innerHTML = `<p>Cargando dashboard...</p>`;
 
   try {
@@ -18,14 +25,14 @@ async function renderDashboard(contenedor) {
     Estado.set({
       cache: { equipos: datos.equipos, modelos: [], ultimaActualizacion: new Date().toISOString() },
     });
-    pintarDashboard(contenedor, datos);
+    pintarDashboard(contenedor, datos, parametroRuta);
   } catch (err) {
     console.error(err);
     contenedor.innerHTML = `<p>No se pudo conectar con Apps Script: ${err.message}</p>`;
   }
 }
 
-function pintarDashboard(contenedor, datos) {
+function pintarDashboard(contenedor, datos, parametroRuta) {
   const usuario = Estado.get().usuario;
   const puedeCrear = usuario && usuario.roles.some((r) => r === "Comprador" || r === "Administrador");
 
@@ -33,6 +40,7 @@ function pintarDashboard(contenedor, datos) {
     <h2>Dashboard</h2>
     <p>
       <a href="#equipos">Ver listado completo de equipos &rarr;</a> ·
+      <a href="#viabilidad-consulta">Consulta de Viabilidad &rarr;</a> ·
       <a href="#diagnosticos">Iniciar diagnóstico &rarr;</a> ·
       <a href="#reparaciones">Cola de Reparaciones &rarr;</a> ·
       <a href="#ventas">Ventas y Garantías &rarr;</a> ·
@@ -53,6 +61,16 @@ function pintarDashboard(contenedor, datos) {
   const botonNuevo = document.getElementById("boton-nuevo-equipo");
   if (botonNuevo) {
     botonNuevo.addEventListener("click", () => abrirModalNuevoEquipo());
+  }
+
+  // Llegada desde "Registrar equipo de este modelo" en Viabilidad:
+  // preabre el modal ya con marca/modelo cargados, solo si el rol
+  // puede crear equipos (mismo criterio que el boton de arriba).
+  if (parametroRuta && puedeCrear) {
+    const [marcaPre, modeloPre] = parametroRuta.split("|").map((valor) => decodeURIComponent(valor || ""));
+    if (marcaPre || modeloPre) {
+      abrirModalNuevoEquipo(marcaPre, modeloPre);
+    }
   }
 }
 
@@ -111,7 +129,7 @@ function pintarAlertas(equipos, historial, configuracionSla) {
 // fecha_deteccion si no hay historial todavia) y lo compara contra
 // el SLA de Configuracion para ese estado. Sin SLA definido para el
 // estado (ej. Publicado), no genera alerta - se cubre con aging mas
-// adelante (Fase 4).
+// adelante (Fase 6).
 function calcularAlertas(equipos, historial, configuracionSla) {
   const ultimaEntradaPorEquipo = {};
   historial.forEach((h) => {
@@ -140,16 +158,16 @@ function calcularAlertas(equipos, historial, configuracionSla) {
   return alertas.sort((a, b) => b.dias - a.dias);
 }
 
-function abrirModalNuevoEquipo() {
+function abrirModalNuevoEquipo(marcaPrefill, modeloPrefill) {
   const fondo = document.createElement("div");
   fondo.className = "modal-fondo";
   fondo.innerHTML = `
     <div class="modal-caja">
       <h3>Nuevo equipo detectado</h3>
       <label for="nuevo-marca">Marca</label>
-      <input type="text" id="nuevo-marca" />
+      <input type="text" id="nuevo-marca" value="${marcaPrefill || ""}" />
       <label for="nuevo-modelo">Modelo</label>
-      <input type="text" id="nuevo-modelo" />
+      <input type="text" id="nuevo-modelo" value="${modeloPrefill || ""}" />
       <label for="nuevo-notas">Notas (opcional)</label>
       <textarea id="nuevo-notas" rows="2"></textarea>
       <p id="nuevo-error" class="modal-error" hidden></p>
