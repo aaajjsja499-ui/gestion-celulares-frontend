@@ -113,6 +113,39 @@
   margin: 0.5em 0 1em 0;
 }
 
+/* Panel ampliado del Dashboard (Fase 6, segunda pieza -
+   Especificacion de Interfaz Seccion 4.1 v1.9). Reutiliza
+   .tarjeta-resumen / .lista-alertas de arriba; estas tres clases son
+   nuevas: una tarjeta en alerta (capital libre negativo o por debajo
+   del umbral, rentabilidad global negativa), una tarjeta cuyo dato de
+   base todavia no esta configurado en Configuracion, y el texto de
+   aviso chico dentro de una tarjeta o bloque cuando un umbral
+   configurable especifico (no el dato de base) falta. */
+
+.tarjeta-resumen-alerta {
+  border-color: #c0392b;
+  background: #fdeceb;
+}
+
+.tarjeta-aviso-sin-configurar {
+  background: #f7f7f8;
+}
+
+.tarjeta-aviso {
+  font-size: 0.78rem;
+  color: #856404;
+  background: #fff8e1;
+  border-radius: 4px;
+  padding: 0.3em 0.5em;
+  margin-top: 0.4em;
+}
+
+.panel-ampliado-periodo {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 0.2em 0 0.8em 0;
+}
+
 /* Modales (usados en toda la app: transiciones, alta de equipo,
    diagnostico, reparaciones, ventas, entrega). Nunca tuvieron CSS -
    causa raiz del "no pasa nada" al hacer click, encontrada por
