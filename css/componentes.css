@@ -327,3 +327,41 @@
   font-size: 1rem;
   margin: 0.3em 0 0 0;
 }
+
+/* Reportes (Fase 6, tercera pieza - Especificacion de Interfaz
+   Seccion 4.13). Reutiliza .equipos-filtros para los filtros de cada
+   reporte (misma apariencia en toda la app). Estas dos clases son
+   nuevas: el bloque de cada uno de los cuatro reportes, y la fila de
+   botones de descarga. */
+
+.reporte-bloque {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1em 1.2em;
+  margin-bottom: 1em;
+}
+
+.reporte-bloque h3 {
+  margin-top: 0;
+}
+
+.reporte-botones {
+  display: flex;
+  gap: 0.6em;
+  margin-top: 0.6em;
+}
+
+.reporte-botones button {
+  padding: 0.55em 1.1em;
+  border: none;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #fff;
+  font-weight: 600;
+}
+
+.reporte-botones button:disabled {
+  background: #ccc;
+  color: #888;
+}
