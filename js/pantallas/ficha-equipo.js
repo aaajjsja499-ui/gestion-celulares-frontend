@@ -4,6 +4,12 @@
 // compra, historial de estados. Diagnosticos, Reparaciones y Ventas
 // son de Fase 2 y Fase 3 (Hoja de Ruta) - se muestran como secciones
 // deshabilitadas, no vacias sin explicacion.
+//
+// Fase 7 (Vendedores - Especificacion 4.12): agregada la linea de
+// vendedor (fuente de compra) dentro de "Datos de compra". El backend
+// ya traia id_vendedor en ficha.equipo sin cambios (Transiciones.gs,
+// obtenerFichaEquipo lee la fila completa de Equipos) - unico cambio
+// necesario aca es de despliegue visual.
 
 async function renderFichaEquipo(contenedor, idEquipo) {
   if (!idEquipo) {
@@ -44,6 +50,7 @@ function pintarFicha(contenedor, ficha, diagnosticosPrevios) {
       <p>Fecha detección: ${formatearFecha(e.fecha_deteccion)}</p>
       <p>Fecha compra: ${formatearFecha(e.fecha_compra)}</p>
       <p>Precio compra: ${formatearGuaranies(e.precio_compra)}</p>
+      <p>Vendedor: ${e.id_vendedor ? `<a href="#vendedores/${e.id_vendedor}">${e.id_vendedor}</a>` : "sin registrar"}</p>
       <p>Notas: ${e.notas || "-"}</p>
     </details>
 
