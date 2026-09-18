@@ -241,6 +241,18 @@ const Api = (() => {
     return llamar("ajustarStockRepuesto", { idRepuesto, cantidad, motivo, comentario });
   }
 
+  // --- Reportes Exportables (Especificacion 4.13, Diseno Tecnico
+  // 4.12, Fase 6 - tercera pieza) ---
+
+  // Lectura completa de la hoja Reparaciones, sin filtrar por estado
+  // (a diferencia de obtenerColaReparaciones, que solo trae la cola
+  // en curso). Endpoint nuevo, agregado especificamente para este
+  // reporte - los otros tres reportes reutilizan endpoints existentes
+  // (obtenerEquiposYModelos, obtenerDatosDashboardAmpliado).
+  async function obtenerReparacionesTodas() {
+    return llamar("obtenerReparacionesTodas");
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -273,5 +285,6 @@ const Api = (() => {
     crearRepuesto,
     actualizarRepuesto,
     ajustarStockRepuesto,
+    obtenerReparacionesTodas,
   };
 })();
