@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sistema de Gestion de Celulares</title>
 
-  <link rel="stylesheet" href="css/base.css?v=20260918b" />
-  <link rel="stylesheet" href="css/layout.css?v=20260918b" />
-  <link rel="stylesheet" href="css/componentes.css?v=20260918b" />
-  <link rel="stylesheet" href="css/tema-oscuro.css?v=20260918b" />
+  <link rel="stylesheet" href="css/base.css?v=20260918c" />
+  <link rel="stylesheet" href="css/layout.css?v=20260918c" />
+  <link rel="stylesheet" href="css/componentes.css?v=20260918c" />
+  <link rel="stylesheet" href="css/tema-oscuro.css?v=20260918c" />
 </head>
 <body>
 
@@ -35,16 +35,16 @@
   <main id="app-contenido" hidden></main>
 
   <!-- config.js va primero: todo lo demas depende de CONFIG -->
-  <script src="config.js?v=20260918b"></script>
+  <script src="config.js?v=20260918c"></script>
 
   <!-- core: orden importa, cada uno depende del anterior -->
-  <script src="js/core/estado.js?v=20260918b"></script>
-  <script src="js/core/cache.js?v=20260918b"></script>
-  <script src="js/core/api.js?v=20260918b"></script>
-  <script src="js/core/auth.js?v=20260918b"></script>
-  <script src="js/core/router.js?v=20260918b"></script>
+  <script src="js/core/estado.js?v=20260918c"></script>
+  <script src="js/core/cache.js?v=20260918c"></script>
+  <script src="js/core/api.js?v=20260918c"></script>
+  <script src="js/core/auth.js?v=20260918c"></script>
+  <script src="js/core/router.js?v=20260918c"></script>
 
-  <script src="js/utils.js?v=20260918b"></script>
+  <script src="js/utils.js?v=20260918c"></script>
 
   <!-- Libreria externa para exportar a Excel (.xlsx) desde Reportes
        (Diseno Tecnico Seccion 4.12) - primera dependencia externa de
@@ -53,27 +53,28 @@
        el host local de SPCK antes de dar por cerrada esta pieza; si
        no lo es, la alternativa es empaquetar una copia local del
        archivo dentro del .zip (ver nota en Contexto de Sesion). -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js?v=20260918b"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js?v=20260918c"></script>
 
   <!-- calculos -->
-  <script src="js/calculos/valoracion.js?v=20260918b"></script>
-  <script src="js/calculos/viabilidad.js?v=20260918b"></script>
-  <script src="js/calculos/rentabilidad.js?v=20260918b"></script>
-  <script src="js/calculos/alertas.js?v=20260918b"></script>
+  <script src="js/calculos/valoracion.js?v=20260918c"></script>
+  <script src="js/calculos/viabilidad.js?v=20260918c"></script>
+  <script src="js/calculos/rentabilidad.js?v=20260918c"></script>
+  <script src="js/calculos/alertas.js?v=20260918c"></script>
 
   <!-- pantallas: cada una se auto-registra en el Router al cargar -->
-  <script src="js/pantallas/dashboard.js?v=20260918b"></script>
-  <script src="js/pantallas/equipos.js?v=20260918b"></script>
-  <script src="js/pantallas/ficha-equipo.js?v=20260918b"></script>
-  <script src="js/pantallas/viabilidad-consulta.js?v=20260918b"></script>
-  <script src="js/pantallas/diagnosticos.js?v=20260918b"></script>
-  <script src="js/pantallas/reparaciones.js?v=20260918b"></script>
-  <script src="js/pantallas/repuestos.js?v=20260918b"></script>
-  <script src="js/pantallas/ventas.js?v=20260918b"></script>
-  <script src="js/pantallas/catalogo.js?v=20260918b"></script>
-  <script src="js/pantallas/decisiones.js?v=20260918b"></script>
-  <script src="js/pantallas/clientes.js?v=20260918b"></script>
-  <script src="js/pantallas/reportes.js?v=20260918b"></script>
+  <script src="js/pantallas/dashboard.js?v=20260918c"></script>
+  <script src="js/pantallas/equipos.js?v=20260918c"></script>
+  <script src="js/pantallas/ficha-equipo.js?v=20260918c"></script>
+  <script src="js/pantallas/viabilidad-consulta.js?v=20260918c"></script>
+  <script src="js/pantallas/diagnosticos.js?v=20260918c"></script>
+  <script src="js/pantallas/reparaciones.js?v=20260918c"></script>
+  <script src="js/pantallas/repuestos.js?v=20260918c"></script>
+  <script src="js/pantallas/ventas.js?v=20260918c"></script>
+  <script src="js/pantallas/catalogo.js?v=20260918c"></script>
+  <script src="js/pantallas/decisiones.js?v=20260918c"></script>
+  <script src="js/pantallas/clientes.js?v=20260918c"></script>
+  <script src="js/pantallas/reportes.js?v=20260918c"></script>
+  <script src="js/pantallas/vendedores.js?v=20260918c"></script>
 
   <script>
     // Arranque de la app: mientras no haya login, solo se ve
