@@ -3,30 +3,74 @@
 //
 // Brecha encontrada al escribir esta pantalla (se declara aca, no en
 // silencio - Metodologia del proyecto): la Especificacion 4.6 pide
-// dos cosas que la hoja Repuestos (Diseno Tecnico Seccion 3.6) no
+// una cosa que la hoja Repuestos (Diseno Tecnico Seccion 3.6) no
 // tiene columna para:
-//   1. "No se elimina, se marca como Inactivo si deja de usarse" ->
-//      hace falta una columna de estado (se asume "activo": Si/No).
-//   2. "Alerta visual: Stock bajo resaltado en rojo" -> hace falta un
-//      minimo configurable. Diseno Tecnico 4.4 dice "por debajo de un
-//      minimo" pero ese minimo no esta en Configuracion ni en
-//      Repuestos. Se asume un campo por repuesto ("stock_minimo"),
-//      mas flexible que un solo minimo global (un tornillo y una
-//      pantalla no tienen el mismo piso razonable de stock).
-// Ambas columnas nuevas se muestran en el formulario de esta pantalla
-// dando por hecho que Pedro las agrega a la hoja Repuestos en Sheets
-// antes de usarla. Pendiente de confirmar con Pedro y reflejar en
-// Diseno Tecnico Seccion 3.6 (ver Indice Maestro).
+//   "No se elimina, se marca como Inactivo si deja de usarse" ->
+//   hace falta una columna de estado (se asume "activo": Si/No).
+//   Sigue pendiente de que Pedro la agregue a la hoja Repuestos en
+//   Sheets (ver Indice Maestro, backlog item 27).
+//
+// Stock bajo (Especificacion 4.6, Diseno Tecnico 4.4 v2.2, Fase 8):
+// la primera version de esta pantalla asumia un campo "stock_minimo"
+// por repuesto que nunca llego a existir en la hoja real, asi que el
+// resaltado nunca se activaba y el formulario ofrecia un campo que
+// no se guardaba en ningun lado. Decision de Pedro en Fase 8: un
+// umbral unico global, Configuracion.stock_minimo_repuestos, igual
+// para todos los repuestos. Esta pantalla lo lee con
+// Api.obtenerConfiguracion (mismo criterio que la tarjeta de stock
+// bajo del Dashboard y el conteo del backend: stock_actual por
+// debajo del umbral) y, si el umbral no esta cargado o no se puede
+// leer, no resalta nada y lo avisa, sin inventar un numero. El campo
+// por repuesto se quito del formulario (Indice Maestro, backlog
+// items 28 y 29).
 
-let repuestosEstado = { todos: [], filtros: { compatibilidad: "", proveedor: "", soloActivos: true } };
+let repuestosEstado = {
+  todos: [],
+  filtros: { compatibilidad: "", proveedor: "", soloActivos: true },
+  // Umbral unico global de stock bajo (Configuracion.stock_minimo_repuestos).
+  // umbral: numero, o null si no hay umbral utilizable. umbralMotivo explica
+  // por que es null: "sin-configurar" (celda vacia o no numerica) o "error"
+  // (no se pudo leer Configuracion).
+  umbral: null,
+  umbralMotivo: "sin-configurar",
+};
+
+function leerUmbralStockBajo_(configuracion) {
+  if (!configuracion) return { umbral: null, umbralMotivo: "error" };
+  const crudo = configuracion.stock_minimo_repuestos;
+  if (crudo === "" || crudo === null || crudo === undefined) {
+    return { umbral: null, umbralMotivo: "sin-configurar" };
+  }
+  const numero = Number(crudo);
+  if (!Number.isFinite(numero)) return { umbral: null, umbralMotivo: "sin-configurar" };
+  return { umbral: numero, umbralMotivo: "" };
+}
+
+function textoUmbralRepuestos_() {
+  const { umbral, umbralMotivo } = repuestosEstado;
+  if (umbral !== null) {
+    return `<p class="panel-ampliado-periodo">Stock bajo: menos de ${umbral} unidad(es) (umbral único para todos los repuestos, Configuracion.stock_minimo_repuestos).</p>`;
+  }
+  if (umbralMotivo === "error") {
+    return `<p class="tarjeta-aviso">No se pudo cargar el umbral de stock bajo por ahora: no se resalta ningún repuesto.</p>`;
+  }
+  return `<p class="tarjeta-aviso">Configuracion.stock_minimo_repuestos todavía no está cargado: no se resalta ningún repuesto.</p>`;
+}
 
 async function renderRepuestos(contenedor) {
   contenedor.innerHTML = `<p>Cargando repuestos...</p>`;
 
   try {
-    const repuestos = await Api.obtenerRepuestos();
+    const [repuestos, configuracion] = await Promise.all([
+      Api.obtenerRepuestos(),
+      Api.obtenerConfiguracion().catch((err) => {
+        console.warn("No se pudo cargar Configuracion para el umbral de stock bajo:", err);
+        return null;
+      }),
+    ]);
     repuestosEstado.todos = repuestos;
     repuestosEstado.filtros = { compatibilidad: "", proveedor: "", soloActivos: true };
+    Object.assign(repuestosEstado, leerUmbralStockBajo_(configuracion));
     pintarRepuestos(contenedor);
   } catch (err) {
     console.error(err);
@@ -45,6 +89,8 @@ function pintarRepuestos(contenedor) {
       <label><input type="checkbox" id="repuestos-filtro-activos" checked /> Solo activos</label>
       <button id="repuestos-nuevo">+ Nuevo repuesto</button>
     </div>
+
+    ${textoUmbralRepuestos_()}
 
     <div id="repuestos-tabla-contenedor"></div>
   `;
@@ -80,15 +126,18 @@ function pintarTablaRepuestos() {
 
   const filas = filtrados
     .map((r) => {
-      const stockBajo = r.stock_minimo !== undefined && r.stock_minimo !== "" && Number(r.stock_actual) < Number(r.stock_minimo);
+      const stockBajo =
+        repuestosEstado.umbral !== null &&
+        r.stock_actual !== "" && r.stock_actual !== null && r.stock_actual !== undefined &&
+        Number(r.stock_actual) < repuestosEstado.umbral;
       return `
-      <tr class="${stockBajo ? "fila-estado-atencion" : ""}">
+      <tr class="${stockBajo ? "fila-stock-bajo" : ""}">
         <td>${r.id_repuesto}</td>
         <td>${r.nombre}</td>
         <td>${r.compatibilidad || "-"}</td>
         <td>${r.proveedor || "-"}</td>
         <td>${formatearPYG(r.costo_unitario)}</td>
-        <td>${stockBajo ? "&#9888; " : ""}${r.stock_actual}</td>
+        <td class="${stockBajo ? "celda-stock-bajo" : ""}">${stockBajo ? "&#9888; " : ""}${r.stock_actual}</td>
         <td>${r.tiempo_reposicion_dias !== undefined ? r.tiempo_reposicion_dias + " día(s)" : "-"}</td>
         <td>${r.activo === "No" ? "Inactivo" : "Activo"}</td>
         <td>
@@ -155,9 +204,6 @@ function abrirModalRepuesto(repuestoExistente, alGuardar) {
       <input type="number" id="repuesto-stock-inicial" value="0" />
       ` : ""}
 
-      <label for="repuesto-stock-minimo">Stock mínimo (alerta de stock bajo)</label>
-      <input type="number" id="repuesto-stock-minimo" value="${esEdicion ? r.stock_minimo || "" : ""}" />
-
       <label for="repuesto-tiempo-reposicion">Tiempo de reposición (días)</label>
       <input type="number" id="repuesto-tiempo-reposicion" value="${esEdicion ? r.tiempo_reposicion_dias || "" : ""}" />
 
@@ -204,7 +250,6 @@ function abrirModalRepuesto(repuestoExistente, alGuardar) {
       compatibilidad: document.getElementById("repuesto-compatibilidad").value.trim(),
       proveedor: document.getElementById("repuesto-proveedor").value.trim(),
       costo_unitario: Number(document.getElementById("repuesto-costo").value || 0),
-      stock_minimo: Number(document.getElementById("repuesto-stock-minimo").value || 0),
       tiempo_reposicion_dias: Number(document.getElementById("repuesto-tiempo-reposicion").value || 0),
       notas: document.getElementById("repuesto-notas").value.trim(),
     };
