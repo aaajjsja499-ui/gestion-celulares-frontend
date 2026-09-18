@@ -399,3 +399,19 @@
 .badge-alertas:not([hidden]) {
   display: inline-flex;
 }
+
+/* Repuesto con stock bajo en el Inventario de Repuestos (Fase 8,
+   residuo de Alertas completas - Especificacion de Interfaz Seccion
+   4.6, Diseno Tecnico Seccion 4.4 v2.2). Resaltado en rojo, mismo
+   rojo que la tarjeta de alerta del Dashboard (.tarjeta-resumen-alerta).
+   Antes la fila usaba .fila-estado-atencion, que es naranja claro y
+   ademas nunca se activaba (ver repuestos.js). */
+
+.fila-stock-bajo {
+  background: #fdeceb;
+}
+
+.celda-stock-bajo {
+  color: #c0392b;
+  font-weight: 700;
+}
