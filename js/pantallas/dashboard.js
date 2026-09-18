@@ -38,27 +38,44 @@
 // vendedor existente, se crea uno nuevo con ese nombre antes de crear
 // el equipo, en vez de forzar un paso separado en la pantalla de
 // Vendedores primero.
+//
+// Fase 8, primera pieza (Alertas completas - Especificacion de
+// Interfaz Seccion 4.1 v1.11, Diseno Tecnico Seccion 4.4 v2.2): dos
+// tarjetas nuevas, "Repuestos con stock bajo" y "Garantías activas
+// por vencer" (pintarTarjetaStockBajo, pintarTarjetaGarantias). Los
+// conteos vienen del backend (Api.obtenerResumenAlertas(), mismo
+// patron que obtenerReparacionesTodas de Reportes) - el frontend solo
+// decide si mostrar el aviso de "todavía no configurado" para stock
+// bajo, con el mismo criterio de "sin número falso" que ya usa la
+// tarjeta de Capital de Trabajo. La lista de alertas de estancamiento
+// (pintarAlertas, calcularAlertas, mas abajo) no cambia en esta pieza
+// - sigue siendo solo equipos por SLA, ampliarla a repuestos y
+// garantías queda fuera del alcance ya cerrado de esta entrega.
 
 async function renderDashboard(contenedor, parametroRuta) {
   contenedor.innerHTML = `<p>Cargando dashboard...</p>`;
 
   try {
-    const [datos, configuracion] = await Promise.all([
+    const [datos, configuracion, resumenAlertas] = await Promise.all([
       Api.obtenerDatosDashboard(),
       Api.obtenerConfiguracion(),
+      Api.obtenerResumenAlertas().catch((err) => {
+        console.warn("No se pudo cargar el resumen de alertas para las tarjetas del Dashboard:", err);
+        return null;
+      }),
     ]);
     Cache.guardar("equipos", datos.equipos);
     Estado.set({
       cache: { equipos: datos.equipos, modelos: [], ultimaActualizacion: new Date().toISOString() },
     });
-    pintarDashboard(contenedor, datos, configuracion, parametroRuta);
+    pintarDashboard(contenedor, datos, configuracion, resumenAlertas, parametroRuta);
   } catch (err) {
     console.error(err);
     contenedor.innerHTML = `<p>No se pudo conectar con Apps Script: ${err.message}</p>`;
   }
 }
 
-function pintarDashboard(contenedor, datos, configuracion, parametroRuta) {
+function pintarDashboard(contenedor, datos, configuracion, resumenAlertas, parametroRuta) {
   const usuario = Estado.get().usuario;
   const puedeCrear = usuario && usuario.roles.some((r) => r === "Comprador" || r === "Administrador");
 
@@ -87,7 +104,7 @@ function pintarDashboard(contenedor, datos, configuracion, parametroRuta) {
     </div>
   `;
 
-  pintarTarjetas(datos.equipos, configuracion);
+  pintarTarjetas(datos.equipos, configuracion, resumenAlertas);
   pintarAlertas(datos.equipos, datos.historial, datos.configuracionSla);
   cargarYPintarPanelAmpliado(datos.equipos, datos.historial, configuracion);
 
@@ -107,7 +124,7 @@ function pintarDashboard(contenedor, datos, configuracion, parametroRuta) {
   }
 }
 
-function pintarTarjetas(equipos, configuracion) {
+function pintarTarjetas(equipos, configuracion, resumenAlertas) {
   const conteos = {};
   equipos.forEach((e) => {
     conteos[e.estado] = (conteos[e.estado] || 0) + 1;
@@ -130,6 +147,8 @@ function pintarTarjetas(equipos, configuracion) {
         .join("")}
       ${!estados.length ? "<p>Sin equipos todavia. Usa \"Nuevo equipo detectado\" para cargar el primero.</p>" : ""}
       ${pintarTarjetaCapital(capital)}
+      ${pintarTarjetaStockBajo(configuracion, resumenAlertas)}
+      ${pintarTarjetaGarantias(configuracion, resumenAlertas)}
     </div>
   `;
 }
@@ -158,6 +177,71 @@ function pintarTarjetaCapital(capital) {
           ? '<div class="tarjeta-aviso">Umbral capital_minimo_alerta todavía no configurado - por ahora solo avisa si el capital libre es negativo.</div>'
           : ""
       }
+    </div>`;
+}
+
+// Repuestos con stock bajo (Diseno Tecnico Seccion 4.4 v2.2, Fase 8,
+// Especificacion de Interfaz Seccion 4.1 v1.11): umbral unico global
+// Configuracion.stock_minimo_repuestos. El conteo real viene del
+// backend (Api.obtenerResumenAlertas, mismo patron que
+// obtenerReparacionesTodas) - esta funcion solo decide si mostrar el
+// aviso de "todavía no configurado", mismo criterio de "sin número
+// falso" que pintarTarjetaCapital, arriba.
+function pintarTarjetaStockBajo(configuracion, resumenAlertas) {
+  const umbral = configuracion.stock_minimo_repuestos;
+  const umbralConfigurado = !(umbral === "" || umbral === null || umbral === undefined);
+
+  if (!umbralConfigurado) {
+    return `
+      <div class="tarjeta-resumen tarjeta-aviso-sin-configurar">
+        <div class="tarjeta-etiqueta">Repuestos con stock bajo</div>
+        <div class="tarjeta-aviso">Configuracion.stock_minimo_repuestos todavía no está cargado.</div>
+      </div>`;
+  }
+
+  if (!resumenAlertas) {
+    return `
+      <div class="tarjeta-resumen tarjeta-aviso-sin-configurar">
+        <div class="tarjeta-etiqueta">Repuestos con stock bajo</div>
+        <div class="tarjeta-aviso">No se pudo cargar el conteo por ahora.</div>
+      </div>`;
+  }
+
+  const cantidad = resumenAlertas.stockBajo || 0;
+  return `
+    <div class="tarjeta-resumen ${cantidad > 0 ? "tarjeta-resumen-alerta" : ""}">
+      <div class="tarjeta-numero">${cantidad}</div>
+      <div class="tarjeta-etiqueta">Repuesto(s) con stock bajo (umbral: ${umbral})</div>
+    </div>`;
+}
+
+// Garantías activas por vencer (Diseno Tecnico Seccion 4.4 v2.2, Fase
+// 8, Especificacion de Interfaz Seccion 4.1 v1.11): desde la fecha de
+// "Entregado", no fecha de venta. Margen Configuracion.
+// dias_alerta_garantia, con default 7 si está vacío - mismo default
+// que aplica el backend en obtenerResumenAlertas (a diferencia de
+// stock_minimo_repuestos, este campo sí tiene un default documentado,
+// no es "sin número falso").
+function pintarTarjetaGarantias(configuracion, resumenAlertas) {
+  const margenConfigurado = configuracion.dias_alerta_garantia;
+  const margen =
+    margenConfigurado === "" || margenConfigurado === null || margenConfigurado === undefined
+      ? 7
+      : Number(margenConfigurado);
+
+  if (!resumenAlertas) {
+    return `
+      <div class="tarjeta-resumen tarjeta-aviso-sin-configurar">
+        <div class="tarjeta-etiqueta">Garantías activas por vencer</div>
+        <div class="tarjeta-aviso">No se pudo cargar el conteo por ahora.</div>
+      </div>`;
+  }
+
+  const cantidad = resumenAlertas.garantiasPorVencer || 0;
+  return `
+    <div class="tarjeta-resumen ${cantidad > 0 ? "tarjeta-resumen-alerta" : ""}">
+      <div class="tarjeta-numero">${cantidad}</div>
+      <div class="tarjeta-etiqueta">Garantía(s) por vencer en ${margen} día(s)</div>
     </div>`;
 }
 
