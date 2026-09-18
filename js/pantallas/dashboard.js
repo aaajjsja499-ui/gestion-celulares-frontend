@@ -5,9 +5,9 @@
 // Configuracion), y alta de equipo nuevo ("Nuevo equipo detectado").
 // Reemplaza la pantalla de prueba de conectividad de Fase 0 (ya
 // cerrada y verificada - ver Indice Maestro v2.8).
-// Ventas del mes, stock de repuestos, capital de trabajo y el panel
-// ampliado son de fases posteriores (RG-01). El Panel de Garantías
-// (Fase 3, Pieza 2) ya existe en #ventas - link agregado abajo.
+// Ventas del mes y stock de repuestos siguen pendientes de una fase
+// posterior (RG-01). El Panel de Garantías (Fase 3, Pieza 2) ya
+// existe en #ventas - link agregado abajo.
 //
 // Fase 5 (Viabilidad, v3.24 del Indice Maestro): agregado el link a
 // Consulta de Viabilidad, y soporte para recibir un parametro de ruta
@@ -15,24 +15,38 @@
 // viabilidad-consulta.js) que preabre el modal de alta de equipo con
 // esos datos ya cargados - reutiliza el modal existente en vez de
 // crear un segundo mecanismo de alta.
+//
+// Fase 6, segunda pieza (Panel ampliado - Especificacion de Interfaz
+// Seccion 4.1 v1.9, Diseno Tecnico Secciones 4.5 a 4.9): se agrega la
+// tarjeta de Capital de Trabajo (H-01, documentada desde Fase 1 pero
+// nunca construida - hueco declarado al elicitar esta pieza) junto a
+// las tarjetas de estado, y un bloque nuevo con aging (H-02), tasa de
+// conversion (H-03), rentabilidad global del mes en curso (H-07) y
+// alertas de retroalimentacion al catalogo (H-05). Se carga en un
+// segundo paso, separado del dashboard base, para no retrasar lo que
+// ya funcionaba (Api.obtenerDatosDashboard sigue siendo la primera
+// llamada, igual que antes).
 
 async function renderDashboard(contenedor, parametroRuta) {
   contenedor.innerHTML = `<p>Cargando dashboard...</p>`;
 
   try {
-    const datos = await Api.obtenerDatosDashboard();
+    const [datos, configuracion] = await Promise.all([
+      Api.obtenerDatosDashboard(),
+      Api.obtenerConfiguracion(),
+    ]);
     Cache.guardar("equipos", datos.equipos);
     Estado.set({
       cache: { equipos: datos.equipos, modelos: [], ultimaActualizacion: new Date().toISOString() },
     });
-    pintarDashboard(contenedor, datos, parametroRuta);
+    pintarDashboard(contenedor, datos, configuracion, parametroRuta);
   } catch (err) {
     console.error(err);
     contenedor.innerHTML = `<p>No se pudo conectar con Apps Script: ${err.message}</p>`;
   }
 }
 
-function pintarDashboard(contenedor, datos, parametroRuta) {
+function pintarDashboard(contenedor, datos, configuracion, parametroRuta) {
   const usuario = Estado.get().usuario;
   const puedeCrear = usuario && usuario.roles.some((r) => r === "Comprador" || r === "Administrador");
 
@@ -53,10 +67,15 @@ function pintarDashboard(contenedor, datos, parametroRuta) {
 
     <div id="dashboard-tarjetas"></div>
     <div id="dashboard-alertas"></div>
+    <div id="dashboard-panel-ampliado">
+      <h3>Panel ampliado</h3>
+      <p>Cargando panel ampliado...</p>
+    </div>
   `;
 
-  pintarTarjetas(datos.equipos);
+  pintarTarjetas(datos.equipos, configuracion);
   pintarAlertas(datos.equipos, datos.historial, datos.configuracionSla);
+  cargarYPintarPanelAmpliado(datos.equipos, datos.historial, configuracion);
 
   const botonNuevo = document.getElementById("boton-nuevo-equipo");
   if (botonNuevo) {
@@ -74,7 +93,7 @@ function pintarDashboard(contenedor, datos, parametroRuta) {
   }
 }
 
-function pintarTarjetas(equipos) {
+function pintarTarjetas(equipos, configuracion) {
   const conteos = {};
   equipos.forEach((e) => {
     conteos[e.estado] = (conteos[e.estado] || 0) + 1;
@@ -82,6 +101,7 @@ function pintarTarjetas(equipos) {
 
   const cont = document.getElementById("dashboard-tarjetas");
   const estados = Object.keys(conteos).sort();
+  const capital = Alertas.calcularCapitalDeTrabajo(equipos, configuracion);
 
   cont.innerHTML = `
     <div class="tarjetas-resumen">
@@ -95,8 +115,36 @@ function pintarTarjetas(equipos) {
         )
         .join("")}
       ${!estados.length ? "<p>Sin equipos todavia. Usa \"Nuevo equipo detectado\" para cargar el primero.</p>" : ""}
+      ${pintarTarjetaCapital(capital)}
     </div>
   `;
+}
+
+// Capital de Trabajo (H-01, Diseno Tecnico Seccion 4.5): documentada
+// desde v1.4 como parte del Dashboard base de Fase 1, construida
+// recien aca (Fase 6) - hueco declarado, no resuelto en silencio (ver
+// Indice Maestro). Configuracion.capital_disponible y
+// capital_minimo_alerta pueden estar vacios en la hoja real: se avisa
+// en vez de inventar un numero, mismo patron que Viabilidad.
+function pintarTarjetaCapital(capital) {
+  if (!capital.capitalDisponibleConfigurado) {
+    return `
+      <div class="tarjeta-resumen tarjeta-aviso-sin-configurar">
+        <div class="tarjeta-etiqueta">Capital de trabajo</div>
+        <div class="tarjeta-aviso">Configuracion.capital_disponible todavía no está cargado.</div>
+      </div>`;
+  }
+
+  return `
+    <div class="tarjeta-resumen ${capital.alerta ? "tarjeta-resumen-alerta" : ""}">
+      <div class="tarjeta-numero">${formatearPYG(capital.capitalLibre)}</div>
+      <div class="tarjeta-etiqueta">Capital libre (inmovilizado: ${formatearPYG(capital.capitalInmovilizado)})</div>
+      ${
+        !capital.umbralConfigurado
+          ? '<div class="tarjeta-aviso">Umbral capital_minimo_alerta todavía no configurado - por ahora solo avisa si el capital libre es negativo.</div>'
+          : ""
+      }
+    </div>`;
 }
 
 function pintarAlertas(equipos, historial, configuracionSla) {
@@ -128,8 +176,8 @@ function pintarAlertas(equipos, historial, configuracionSla) {
 // (segun la entrada mas reciente en Historial_Estados, o
 // fecha_deteccion si no hay historial todavia) y lo compara contra
 // el SLA de Configuracion para ese estado. Sin SLA definido para el
-// estado (ej. Publicado), no genera alerta - se cubre con aging mas
-// adelante (Fase 6).
+// estado (ej. Publicado), no genera alerta - se cubre con aging en el
+// Panel ampliado (Fase 6, ver cargarYPintarPanelAmpliado).
 function calcularAlertas(equipos, historial, configuracionSla) {
   const ultimaEntradaPorEquipo = {};
   historial.forEach((h) => {
@@ -156,6 +204,104 @@ function calcularAlertas(equipos, historial, configuracionSla) {
   });
 
   return alertas.sort((a, b) => b.dias - a.dias);
+}
+
+// Panel ampliado (Fase 6, segunda pieza): aging, tasa de conversion,
+// rentabilidad global y alertas H-05. Se pide en un segundo paso,
+// separado del dashboard base, para no retrasar las tarjetas y
+// alertas de estancamiento que ya funcionaban antes de esta pieza.
+async function cargarYPintarPanelAmpliado(equipos, historial, configuracion) {
+  const cont = document.getElementById("dashboard-panel-ampliado");
+
+  try {
+    const [datosAmpliado, equiposYModelos, diagnosticos] = await Promise.all([
+      Api.obtenerDatosDashboardAmpliado(),
+      Api.obtenerEquiposYModelos(),
+      Api.obtenerDiagnosticosTodos().catch((err) => {
+        console.warn("No se pudo cargar diagnosticos para H-05 en el Dashboard:", err);
+        return null;
+      }),
+    ]);
+
+    const rango = Alertas.obtenerRangoMesActual();
+    const aging = Alertas.calcularAging(equipos, historial);
+    const conversionCompra = Alertas.calcularTasaConversion(historial, "Detectado", "Comprado", rango);
+    const conversionVenta = Alertas.calcularTasaConversion(historial, "Publicado", "Vendido", rango);
+    const rentabilidad = Alertas.calcularRentabilidadGlobal(
+      datosAmpliado.ventas,
+      equipos,
+      datosAmpliado.gastosOperativos,
+      rango
+    );
+    const alertasCatalogo = diagnosticos
+      ? Alertas.listarAlertasCatalogo(equiposYModelos.modelos, equipos, diagnosticos, configuracion)
+      : { umbralesConfigurados: false, sinDatos: true, alertas: [] };
+
+    pintarPanelAmpliado(cont, { rango, aging, conversionCompra, conversionVenta, rentabilidad, alertasCatalogo });
+  } catch (err) {
+    console.error(err);
+    cont.innerHTML = `<h3>Panel ampliado</h3><p>No se pudo cargar el panel ampliado: ${err.message}</p>`;
+  }
+}
+
+function pintarPanelAmpliado(cont, datos) {
+  const { rango, aging, conversionCompra, conversionVenta, rentabilidad, alertasCatalogo } = datos;
+  const agingTop = aging.slice(0, 5);
+  const etiquetaPeriodo =
+    "Mes en curso (" + rango.inicio.toLocaleDateString("es-PY") + " a " + rango.fin.toLocaleDateString("es-PY") + ")";
+
+  cont.innerHTML = `
+    <h3>Panel ampliado</h3>
+    <p class="panel-ampliado-periodo">Período: ${etiquetaPeriodo}</p>
+
+    <div class="tarjetas-resumen">
+      <div class="tarjeta-resumen">
+        <div class="tarjeta-numero">${conversionCompra.tasa === null ? "-" : conversionCompra.tasa.toFixed(0) + "%"}</div>
+        <div class="tarjeta-etiqueta">Detectado &rarr; Comprado (${conversionCompra.cantidadB}/${conversionCompra.cantidadA})</div>
+      </div>
+      <div class="tarjeta-resumen">
+        <div class="tarjeta-numero">${conversionVenta.tasa === null ? "-" : conversionVenta.tasa.toFixed(0) + "%"}</div>
+        <div class="tarjeta-etiqueta">Publicado &rarr; Vendido (${conversionVenta.cantidadB}/${conversionVenta.cantidadA})</div>
+      </div>
+      <div class="tarjeta-resumen ${rentabilidad.rentabilidadGlobal < 0 ? "tarjeta-resumen-alerta" : ""}">
+        <div class="tarjeta-numero">${formatearPYG(rentabilidad.rentabilidadGlobal)}</div>
+        <div class="tarjeta-etiqueta">Rentabilidad global (${rentabilidad.cantidadVentas} venta(s) - ${formatearPYG(rentabilidad.gastosOperativos)} gastos)</div>
+      </div>
+    </div>
+
+    <h4>Antigüedad de inventario (Listo para venta / Publicado)</h4>
+    ${
+      agingTop.length
+        ? `
+      <ul class="lista-alertas">
+        ${agingTop
+          .map(
+            (a) => `
+          <li>
+            <a href="#ficha-equipo/${a.idEquipo}">${a.idEquipo}</a> -
+            ${a.marca || ""} ${a.modelo || ""}, ${a.estado}, ${a.dias === null ? "sin fecha" : a.dias + " día(s)"}
+          </li>`
+          )
+          .join("")}
+      </ul>`
+        : "<p>Sin equipos en Listo para venta o Publicado por ahora.</p>"
+    }
+
+    <h4>Retroalimentación al catálogo (H-05)</h4>
+    ${
+      alertasCatalogo.sinDatos
+        ? '<p class="tarjeta-aviso">No se pudo cargar el detalle de diagnósticos - este bloque no está disponible por ahora.</p>'
+        : !alertasCatalogo.umbralesConfigurados
+        ? '<p class="tarjeta-aviso">Configuracion.umbral_tasa_falla y/o ventas_minimas_evaluacion todavía no están cargados - este aviso queda pendiente hasta que se definan los valores reales.</p>'
+        : alertasCatalogo.alertas.length
+        ? `<ul class="lista-alertas">
+            ${alertasCatalogo.alertas
+              .map((a) => `<li><a href="#catalogo">${a.marca} ${a.modelo}</a> - ${a.motivos.join("; ")}</li>`)
+              .join("")}
+          </ul>`
+        : "<p>Sin modelos que superen los umbrales por ahora.</p>"
+    }
+  `;
 }
 
 function abrirModalNuevoEquipo(marcaPrefill, modeloPrefill) {
