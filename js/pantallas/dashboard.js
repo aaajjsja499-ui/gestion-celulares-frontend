@@ -26,6 +26,10 @@
 // segundo paso, separado del dashboard base, para no retrasar lo que
 // ya funcionaba (Api.obtenerDatosDashboard sigue siendo la primera
 // llamada, igual que antes).
+//
+// Fase 6, tercera pieza (Reportes - Especificacion de Interfaz
+// Seccion 4.13, Diseno Tecnico Seccion 4.12): agregado el link a
+// Reportes en la lista de navegacion de abajo.
 
 async function renderDashboard(contenedor, parametroRuta) {
   contenedor.innerHTML = `<p>Cargando dashboard...</p>`;
@@ -60,7 +64,8 @@ function pintarDashboard(contenedor, datos, configuracion, parametroRuta) {
       <a href="#ventas">Ventas y Garantías &rarr;</a> ·
       <a href="#clientes">Directorio de Clientes &rarr;</a> ·
       <a href="#catalogo">Catálogo de Modelos &rarr;</a> ·
-      <a href="#repuestos">Inventario de Repuestos &rarr;</a>
+      <a href="#repuestos">Inventario de Repuestos &rarr;</a> ·
+      <a href="#reportes">Reportes &rarr;</a>
     </p>
 
     ${puedeCrear ? '<button id="boton-nuevo-equipo">+ Nuevo equipo detectado</button>' : ""}
