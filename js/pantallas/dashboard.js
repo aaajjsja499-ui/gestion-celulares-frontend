@@ -30,6 +30,14 @@
 // Fase 6, tercera pieza (Reportes - Especificacion de Interfaz
 // Seccion 4.13, Diseno Tecnico Seccion 4.12): agregado el link a
 // Reportes en la lista de navegacion de abajo.
+//
+// Fase 7 (Vendedores - Especificacion de Interfaz Seccion 4.12, Diseno
+// Tecnico Seccion 3.14): agregado el link a Vendedores, y en el modal
+// "Nuevo equipo detectado" un selector de vendedor (fuente de compra)
+// con "alta rapida" - si el texto ingresado no coincide con ningun
+// vendedor existente, se crea uno nuevo con ese nombre antes de crear
+// el equipo, en vez de forzar un paso separado en la pantalla de
+// Vendedores primero.
 
 async function renderDashboard(contenedor, parametroRuta) {
   contenedor.innerHTML = `<p>Cargando dashboard...</p>`;
@@ -65,7 +73,8 @@ function pintarDashboard(contenedor, datos, configuracion, parametroRuta) {
       <a href="#clientes">Directorio de Clientes &rarr;</a> ·
       <a href="#catalogo">Catálogo de Modelos &rarr;</a> ·
       <a href="#repuestos">Inventario de Repuestos &rarr;</a> ·
-      <a href="#reportes">Reportes &rarr;</a>
+      <a href="#reportes">Reportes &rarr;</a> ·
+      <a href="#vendedores">Vendedores &rarr;</a>
     </p>
 
     ${puedeCrear ? '<button id="boton-nuevo-equipo">+ Nuevo equipo detectado</button>' : ""}
@@ -319,6 +328,9 @@ function abrirModalNuevoEquipo(marcaPrefill, modeloPrefill) {
       <input type="text" id="nuevo-marca" value="${marcaPrefill || ""}" />
       <label for="nuevo-modelo">Modelo</label>
       <input type="text" id="nuevo-modelo" value="${modeloPrefill || ""}" />
+      <label for="nuevo-vendedor">Vendedor (fuente de compra, opcional)</label>
+      <input type="text" id="nuevo-vendedor" list="nuevo-vendedor-lista" placeholder="Nombre existente o nuevo" />
+      <datalist id="nuevo-vendedor-lista"></datalist>
       <label for="nuevo-notas">Notas (opcional)</label>
       <textarea id="nuevo-notas" rows="2"></textarea>
       <p id="nuevo-error" class="modal-error" hidden></p>
@@ -332,10 +344,24 @@ function abrirModalNuevoEquipo(marcaPrefill, modeloPrefill) {
 
   document.getElementById("nuevo-cancelar").addEventListener("click", () => fondo.remove());
 
+  // Carga la lista de vendedores existentes para el datalist, sin
+  // bloquear el resto del modal - si falla, el campo sigue
+  // funcionando como texto libre (alta rapida igual crea uno nuevo).
+  let vendedoresCargados = [];
+  Api.obtenerVendedores()
+    .then((vendedores) => {
+      vendedoresCargados = vendedores;
+      document.getElementById("nuevo-vendedor-lista").innerHTML = vendedores
+        .map((v) => `<option value="${v.nombre}"></option>`)
+        .join("");
+    })
+    .catch((err) => console.warn("No se pudo cargar la lista de vendedores:", err));
+
   document.getElementById("nuevo-confirmar").addEventListener("click", async () => {
     const marca = document.getElementById("nuevo-marca").value.trim();
     const modelo = document.getElementById("nuevo-modelo").value.trim();
     const notas = document.getElementById("nuevo-notas").value.trim();
+    const textoVendedor = document.getElementById("nuevo-vendedor").value.trim();
     const errorEl = document.getElementById("nuevo-error");
 
     if (!marca || !modelo) {
@@ -344,13 +370,37 @@ function abrirModalNuevoEquipo(marcaPrefill, modeloPrefill) {
       return;
     }
 
+    const botonConfirmar = document.getElementById("nuevo-confirmar");
+    if (botonConfirmar.disabled) return;
+    botonConfirmar.disabled = true;
+    const textoOriginal = botonConfirmar.textContent;
+    botonConfirmar.textContent = "Creando...";
+
     try {
-      const resultado = await Api.crearEquipoDetectado(marca, modelo, notas);
+      let idVendedor = null;
+      if (textoVendedor) {
+        const existente = vendedoresCargados.find(
+          (v) => (v.nombre || "").trim().toLowerCase() === textoVendedor.toLowerCase()
+        );
+        if (existente) {
+          idVendedor = existente.id_vendedor;
+        } else {
+          // Alta rapida: el nombre tecleado no coincide con ningun
+          // vendedor existente, se crea uno nuevo con ese nombre antes
+          // de dar de alta el equipo (Especificacion 4.12).
+          const nuevoVendedor = await Api.crearVendedor({ nombre: textoVendedor });
+          idVendedor = nuevoVendedor.idVendedor;
+        }
+      }
+
+      const resultado = await Api.crearEquipoDetectado(marca, modelo, notas, idVendedor);
       fondo.remove();
       Router.navegar("ficha-equipo", resultado.idEquipo);
     } catch (err) {
       errorEl.textContent = err.message;
       errorEl.hidden = false;
+      botonConfirmar.disabled = false;
+      botonConfirmar.textContent = textoOriginal;
     }
   });
 }
