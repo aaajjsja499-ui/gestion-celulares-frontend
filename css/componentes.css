@@ -370,10 +370,19 @@
    Especificacion de Interfaz Seccion 3.3, Diseno Tecnico Seccion 4.4
    v2.2). Actualizado en cada navegacion por js/core/router.js
    (actualizarContadorAlertas_). Oculto por defecto mientras el total
-   sea cero. */
+   sea cero.
+   Correccion (18 de Septiembre, verificacion en vivo RG-07): el
+   estado por defecto pasa a "display: none" y solo se activa
+   "inline-flex" cuando el elemento pierde el atributo HTML "hidden"
+   (badge.hidden = false en router.js). Antes, "display: inline-flex"
+   quedaba fijo sin condicion y le ganaba en prioridad al atributo
+   [hidden] del navegador (una regla de autor siempre le gana a la
+   hoja de estilos por defecto del navegador, sin importar
+   especificidad) - el circulo rojo quedaba visible todo el tiempo,
+   incluso en la pantalla de login sin sesion iniciada. */
 
 .badge-alertas {
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   min-width: 1.6em;
@@ -385,4 +394,8 @@
   font-size: 0.85rem;
   font-weight: 700;
   line-height: 1;
+}
+
+.badge-alertas:not([hidden]) {
+  display: inline-flex;
 }
