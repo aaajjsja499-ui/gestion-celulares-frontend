@@ -275,6 +275,17 @@ const Api = (() => {
     return llamar("actualizarVendedor", { idVendedor, cambios });
   }
 
+  // --- Alertas completas (Especificacion de Interfaz Secciones 3.3 y
+  // 4.1, Diseno Tecnico Seccion 4.4, Fase 8 - primera pieza) ---
+  // Resumen liviano de conteos (equipos estancados, stock bajo,
+  // garantias por vencer), pensado para pedirse en cada navegacion
+  // sin descargar Equipos, Repuestos ni Ventas completos - mismo
+  // patron que obtenerReparacionesTodas().
+
+  async function obtenerResumenAlertas() {
+    return llamar("obtenerResumenAlertas");
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -312,5 +323,6 @@ const Api = (() => {
     obtenerFichaVendedor,
     crearVendedor,
     actualizarVendedor,
+    obtenerResumenAlertas,
   };
 })();
