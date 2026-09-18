@@ -14,6 +14,12 @@
 
   <header id="app-header" hidden>
     <strong id="app-titulo">Gestion de Celulares</strong>
+    <!-- Contador de alertas (Fase 8, primera pieza - Especificacion
+         de Interfaz Seccion 3.3, Diseno Tecnico Seccion 4.4 v2.2).
+         Se actualiza en cada navegacion desde js/core/router.js
+         (actualizarContadorAlertas_). Oculto mientras el total sea
+         cero o no haya llegado la primera respuesta del backend. -->
+    <span id="app-alertas-contador" class="badge-alertas" hidden title="Alertas activas"></span>
     <span id="app-usuario"></span>
   </header>
 
