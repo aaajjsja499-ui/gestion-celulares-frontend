@@ -57,6 +57,15 @@ const Api = (() => {
     return llamar("obtenerDatosDashboard");
   }
 
+  // Panel ampliado del Dashboard (Fase 6, segunda pieza -
+  // Especificacion de Interfaz Seccion 4.1 v1.9): ventas y gastos
+  // operativos, para la rentabilidad global (H-07). Equipos,
+  // historial y configuracion ya llegan por obtenerDatosDashboard y
+  // obtenerConfiguracion - esta llamada solo agrega lo que faltaba.
+  async function obtenerDatosDashboardAmpliado() {
+    return llamar("obtenerDatosDashboardAmpliado");
+  }
+
   // Alta de equipo nuevo en estado Detectado.
   async function crearEquipoDetectado(marca, modelo, notas) {
     return llamar("crearEquipoDetectado", { marca, modelo, notas });
@@ -192,11 +201,8 @@ const Api = (() => {
 
   // Diagnosticos de TODOS los equipos, sin filtrar por id_equipo -
   // necesario para calcular tasaFalla por modelo (H-05, Diseno
-  // Tecnico Seccion 4.8). Operacion nueva, todavia no implementada en
-  // el backend a la fecha de este archivo (ver Indice Maestro) - se
-  // deja declarada aca para que catalogo.js la use apenas exista;
-  // mientras tanto catalogo.js detecta su ausencia y sigue
-  // funcionando sin el aviso H-05.
+  // Tecnico Seccion 4.8). Usado por Catalogo de Modelos y, desde
+  // Fase 6 (Panel ampliado), tambien por el Dashboard.
   async function obtenerDiagnosticosTodos() {
     return llamar("obtenerDiagnosticosTodos");
   }
@@ -242,6 +248,7 @@ const Api = (() => {
     obtenerFichaEquipo,
     transicionarEquipo,
     obtenerDatosDashboard,
+    obtenerDatosDashboardAmpliado,
     crearEquipoDetectado,
     guardarDiagnostico,
     obtenerDiagnosticosEquipo,
