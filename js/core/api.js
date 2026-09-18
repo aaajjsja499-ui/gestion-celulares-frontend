@@ -66,9 +66,11 @@ const Api = (() => {
     return llamar("obtenerDatosDashboardAmpliado");
   }
 
-  // Alta de equipo nuevo en estado Detectado.
-  async function crearEquipoDetectado(marca, modelo, notas) {
-    return llamar("crearEquipoDetectado", { marca, modelo, notas });
+  // Alta de equipo nuevo en estado Detectado. idVendedor es opcional
+  // (Fase 7, Especificacion 4.12): selector de fuente de compra en el
+  // modal de alta del Dashboard.
+  async function crearEquipoDetectado(marca, modelo, notas, idVendedor) {
+    return llamar("crearEquipoDetectado", { marca, modelo, notas, idVendedor });
   }
 
   // --- Fase 2 (Diagnostico y Reparaciones) ---
@@ -253,6 +255,26 @@ const Api = (() => {
     return llamar("obtenerReparacionesTodas");
   }
 
+  // --- Vendedores (Especificacion 4.12, Diseno Tecnico 3.14, Fase 7) ---
+  // Directorio de fuentes de compra. No confundir con Clientes
+  // (compradores) ni con el rol "Vendedor" de Usuarios.
+
+  async function obtenerVendedores() {
+    return llamar("obtenerVendedores");
+  }
+
+  async function obtenerFichaVendedor(idVendedor) {
+    return llamar("obtenerFichaVendedor", { idVendedor });
+  }
+
+  async function crearVendedor(datos) {
+    return llamar("crearVendedor", datos);
+  }
+
+  async function actualizarVendedor(idVendedor, cambios) {
+    return llamar("actualizarVendedor", { idVendedor, cambios });
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -286,5 +308,9 @@ const Api = (() => {
     actualizarRepuesto,
     ajustarStockRepuesto,
     obtenerReparacionesTodas,
+    obtenerVendedores,
+    obtenerFichaVendedor,
+    crearVendedor,
+    actualizarVendedor,
   };
 })();
