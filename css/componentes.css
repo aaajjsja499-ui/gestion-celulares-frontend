@@ -365,3 +365,24 @@
   background: #ccc;
   color: #888;
 }
+
+/* Contador de alertas en la barra superior (Fase 8, primera pieza -
+   Especificacion de Interfaz Seccion 3.3, Diseno Tecnico Seccion 4.4
+   v2.2). Actualizado en cada navegacion por js/core/router.js
+   (actualizarContadorAlertas_). Oculto por defecto mientras el total
+   sea cero. */
+
+.badge-alertas {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
