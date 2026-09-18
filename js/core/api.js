@@ -201,6 +201,17 @@ const Api = (() => {
     return llamar("obtenerDiagnosticosTodos");
   }
 
+  // --- Bitacora de Decisiones (Especificacion 4.9, Fase 6) ---
+
+  // Lectura completa de la hoja Decisiones, solo lectura (Especificacion
+  // 4.9 v1.8: listado cronologico, filtro por categoria, buscador de
+  // texto libre, sin alta manual ni marcado de obsoleta). Las escrituras
+  // siguen originandose unicamente desde las pantallas que ya escriben
+  // en esta hoja (hoy, Catalogo de Modelos via insertarDecision_).
+  async function obtenerDecisiones() {
+    return llamar("obtenerDecisiones");
+  }
+
   // --- Inventario de Repuestos (Especificacion 4.6) ---
 
   async function obtenerRepuestos() {
@@ -250,6 +261,7 @@ const Api = (() => {
     crearModelo,
     actualizarModelo,
     obtenerDiagnosticosTodos,
+    obtenerDecisiones,
     obtenerRepuestos,
     crearRepuesto,
     actualizarRepuesto,
