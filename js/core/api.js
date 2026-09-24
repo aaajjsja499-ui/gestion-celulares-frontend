@@ -286,6 +286,31 @@ const Api = (() => {
     return llamar("obtenerResumenAlertas");
   }
 
+  // --- Gestion de Usuarios (Especificacion de Interfaz Seccion 4.14,
+  // Diseno Tecnico Seccion 4.13, Fase 8 - segunda pieza) ---
+  // Los tres endpoints de escritura exigen rol Administrador,
+  // validado en el servidor (Seccion 5.3). obtenerUsuarios es lectura,
+  // tambien restringida a Administrador del lado servidor - no es uno
+  // de los tres endpoints de la Seccion 4.13, se agrega para poder
+  // pintar el listado de la pantalla (mismo patron que
+  // obtenerVendedores para Vendedores).
+
+  async function obtenerUsuarios() {
+    return llamar("obtenerUsuarios");
+  }
+
+  async function altaUsuario(email, nombre, roles, pin) {
+    return llamar("altaUsuario", { email, nombre, roles, pin });
+  }
+
+  async function reiniciarPinUsuario(email, pinNuevo) {
+    return llamar("reiniciarPinUsuario", { email, pinNuevo });
+  }
+
+  async function desactivarUsuario(email) {
+    return llamar("desactivarUsuario", { email });
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -324,5 +349,9 @@ const Api = (() => {
     crearVendedor,
     actualizarVendedor,
     obtenerResumenAlertas,
+    obtenerUsuarios,
+    altaUsuario,
+    reiniciarPinUsuario,
+    desactivarUsuario,
   };
 })();
