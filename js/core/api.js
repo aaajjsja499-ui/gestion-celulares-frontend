@@ -52,6 +52,15 @@ const Api = (() => {
     return llamar("transicionarEquipo", { idEquipo, version, estadoNuevo, comentario });
   }
 
+  // Cierra una compra: unica forma de pasar un equipo a "Comprado"
+  // (Manual de Operaciones 4.3). Reemplaza a transicionarEquipo para
+  // ese destino puntual - agregado 24 Sep 2026, Diseno Tecnico v2.5,
+  // hallazgo real: no existia ningun lugar en el sistema para cargar
+  // precio_compra.
+  async function cerrarCompra(idEquipo, version, precioCompra) {
+    return llamar("cerrarCompra", { idEquipo, version, precioCompra });
+  }
+
   // Dashboard real (Fase 1): equipos, historial y config de SLA.
   async function obtenerDatosDashboard() {
     return llamar("obtenerDatosDashboard");
@@ -317,6 +326,7 @@ const Api = (() => {
     probarEscrituraEquipo,
     obtenerFichaEquipo,
     transicionarEquipo,
+    cerrarCompra,
     obtenerDatosDashboard,
     obtenerDatosDashboardAmpliado,
     crearEquipoDetectado,
