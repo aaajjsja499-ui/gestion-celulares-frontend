@@ -144,6 +144,8 @@ function pintarPanelAcciones(ficha) {
         abrirModalVenta(ficha);
       } else if (estado === "Entregado") {
         abrirModalEntregar(ficha);
+      } else if (estado === "Comprado") {
+        abrirModalCerrarCompra(ficha);
       } else {
         abrirModalTransicion(ficha, estado);
       }
@@ -192,6 +194,70 @@ function abrirModalTransicion(ficha, estadoNuevo) {
       fondo.remove();
       Router.navegar("ficha-equipo", ficha.equipo.id_equipo);
       renderFichaEquipo(document.getElementById("app-contenido"), ficha.equipo.id_equipo);
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.hidden = false;
+      botonConfirmar.disabled = false;
+      botonConfirmar.textContent = textoOriginal;
+    }
+  });
+}
+
+/**
+ * Cierra una compra: unico modal especial para el destino "Comprado"
+ * (mismo patron que abrirModalVenta/abrirModalEntregar) - pide el
+ * precio de compra acordado (Manual de Operaciones 4.3), en vez del
+ * modal generico de solo comentario que usa cualquier otra
+ * transicion. Agregado 24 Sep 2026: hasta esta pieza no existia
+ * ningun lugar en el sistema para cargar precio_compra.
+ *
+ * fecha_compra se guarda automatica (momento de la confirmacion),
+ * igual que el resto de las transiciones - sin campo de fecha en
+ * este modal (decision de Pedro al elicitar esta pieza).
+ */
+function abrirModalCerrarCompra(ficha) {
+  const e = ficha.equipo;
+  const fondo = document.createElement("div");
+  fondo.className = "modal-fondo";
+  fondo.innerHTML = `
+    <div class="modal-caja">
+      <h3>Cerrar compra - ${e.id_equipo}</h3>
+      <p>Equipo: ${e.marca} ${e.modelo} (estado actual: ${e.estado})</p>
+
+      <label for="compra-precio">Precio de compra acordado (Gs.)</label>
+      <input type="number" id="compra-precio" min="1" />
+
+      <p id="compra-error" class="modal-error" hidden></p>
+      <div class="modal-botones">
+        <button id="compra-cancelar">Cancelar</button>
+        <button id="compra-confirmar">Confirmar compra</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(fondo);
+
+  document.getElementById("compra-cancelar").addEventListener("click", () => fondo.remove());
+
+  const botonConfirmar = document.getElementById("compra-confirmar");
+  botonConfirmar.addEventListener("click", async () => {
+    const errorEl = document.getElementById("compra-error");
+    const precioCompra = Number(document.getElementById("compra-precio").value);
+
+    if (!precioCompra || precioCompra <= 0) {
+      errorEl.textContent = "Ingresá un precio de compra válido.";
+      errorEl.hidden = false;
+      return;
+    }
+
+    if (botonConfirmar.disabled) return;
+    botonConfirmar.disabled = true;
+    const textoOriginal = botonConfirmar.textContent;
+    botonConfirmar.textContent = "Confirmando...";
+
+    try {
+      await Api.cerrarCompra(e.id_equipo, e.version, precioCompra);
+      fondo.remove();
+      renderFichaEquipo(document.getElementById("app-contenido"), e.id_equipo);
     } catch (err) {
       errorEl.textContent = err.message;
       errorEl.hidden = false;
