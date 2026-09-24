@@ -41,8 +41,8 @@ function pintarListadoUsuarios(contenedor) {
         Estado
         <select id="usuarios-filtro-estado">
           <option value="Todos">Todos</option>
-          <option value="Activo">Activo</option>
-          <option value="Inactivo">Inactivo</option>
+          <option value="Sí">Activo</option>
+          <option value="No">Inactivo</option>
         </select>
       </label>
       <button id="usuarios-nuevo">+ Nuevo usuario</button>
@@ -117,7 +117,7 @@ function cssId(email) {
 function filaUsuarioHtml(u, usuarioSesion) {
   const esUsuarioActual = usuarioSesion && u.email.trim().toLowerCase() === String(usuarioSesion.email).trim().toLowerCase();
   const fecha = formatearFechaUsuario(u.fecha_alta);
-  const clase = u.activo === "Inactivo" ? "fila-estado-cerrado" : "";
+  const clase = u.activo === "No" ? "fila-estado-cerrado" : "";
 
   return `
     <tr class="${clase}">
@@ -130,7 +130,7 @@ function filaUsuarioHtml(u, usuarioSesion) {
         <button id="usuario-editar-${cssId(u.email)}">Editar</button>
         <button id="usuario-pin-${cssId(u.email)}">Reiniciar PIN</button>
         ${
-          u.activo === "Activo" && !esUsuarioActual
+          u.activo === "Sí" && !esUsuarioActual
             ? `<button id="usuario-desactivar-${cssId(u.email)}">Desactivar</button>`
             : ""
         }
@@ -163,8 +163,8 @@ function formatearFechaUsuario(valor) {
 // si en el uso real hace falta editar roles de un usuario Activo sin
 // tener que escribir un PIN nuevo cada vez.
 function abrirModalUsuario(usuarioExistente) {
-  const esEdicionDeInactivo = usuarioExistente && usuarioExistente.activo === "Inactivo";
-  const esEdicionDeActivo = usuarioExistente && usuarioExistente.activo === "Activo";
+  const esEdicionDeInactivo = usuarioExistente && usuarioExistente.activo === "No";
+  const esEdicionDeActivo = usuarioExistente && usuarioExistente.activo === "Sí";
 
   const fondo = document.createElement("div");
   fondo.className = "modal-fondo";
