@@ -320,6 +320,31 @@ const Api = (() => {
     return llamar("desactivarUsuario", { email });
   }
 
+  // --- Gestion de Configuracion (Diseno Tecnico Seccion 4.14,
+  // Especificacion de Interfaz Seccion 4.16, Fase 8 - cuarta pieza) ---
+  // Un unico endpoint de escritura, rol Administrador validado en el
+  // servidor. No hay lectura nueva: la pantalla usa obtenerConfiguracion
+  // (ya existente, arriba) para precargar los valores actuales.
+
+  async function actualizarConfiguracion(cambios, comentario) {
+    return llamar("actualizarConfiguracion", { cambios, comentario });
+  }
+
+  // --- Gestion de Gastos Operativos (Diseno Tecnico Seccion 4.15,
+  // Especificacion de Interfaz Seccion 4.15, Fase 8 - quinta pieza) ---
+  // Dos endpoints de escritura, rol Administrador validado en el
+  // servidor. No hay lectura dedicada: la pantalla reutiliza
+  // obtenerDatosDashboardAmpliado().gastosOperativos (ya existente,
+  // mismo criterio que ya usa reportes.js).
+
+  async function crearGastoOperativo(fecha, categoria, monto, descripcion) {
+    return llamar("crearGastoOperativo", { fecha, categoria, monto, descripcion });
+  }
+
+  async function anularGastoOperativo(idGasto, motivo) {
+    return llamar("anularGastoOperativo", { idGasto, motivo });
+  }
+
   return {
     llamar,
     obtenerEquiposYModelos,
@@ -363,5 +388,8 @@ const Api = (() => {
     altaUsuario,
     reiniciarPinUsuario,
     desactivarUsuario,
+    actualizarConfiguracion,
+    crearGastoOperativo,
+    anularGastoOperativo,
   };
 })();
