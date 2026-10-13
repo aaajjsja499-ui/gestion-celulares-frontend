@@ -45,6 +45,11 @@ const Navegacion = (() => {
     { ruta: "vendedores", etiqueta: "Vendedores" },
     { ruta: "reportes", etiqueta: "Reportes" },
     { ruta: "usuarios", etiqueta: "Usuarios", soloAdministrador: true },
+    // Fase 8, cuarta y quinta pieza (Gestion de Gastos Operativos y
+    // Gestion de Configuracion - Especificacion de Interfaz Seccion
+    // 3.2, D-015): mismo criterio que "Usuarios" - solo Administrador.
+    { ruta: "gastos-operativos", etiqueta: "Gastos Operativos", soloAdministrador: true },
+    { ruta: "configuracion", etiqueta: "Configuración", soloAdministrador: true },
   ];
 
   let panelAbierto = false;
