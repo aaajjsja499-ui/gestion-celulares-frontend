@@ -169,6 +169,11 @@ const Alertas = (() => {
 
     const gastosDelPeriodo = gastosOperativos
       .filter((g) => {
+        // Un gasto anulado no entra en el calculo (Especificacion de
+        // Interfaz 4.15, decision de Pedro: "Gastos anulados ya no
+        // debe formar parte de los calculos"). Sigue visible en el
+        // listado y en el reporte, solo queda fuera de este total.
+        if (g.anulado === "Sí") return false;
         const fecha = new Date(g.fecha);
         return fecha >= rango.inicio && fecha <= rango.fin;
       })
