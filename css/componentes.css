@@ -498,3 +498,75 @@
 #menu-panel-lista a:active {
   background: #f0f0f0;
 }
+
+/* Pantalla de Configuracion (Fase 8, quinta pieza - Especificacion de
+   Interfaz Seccion 4.16, Diseno Tecnico Seccion 4.14). Un bloque por
+   grupo tematico, mismo look que .reporte-bloque (Fase 6) pero con
+   nombre propio porque esta pantalla tiene su propio formulario y su
+   propio indicador de suma de pesos, no botones de descarga. */
+
+.config-bloque {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1em 1.2em;
+  margin-bottom: 1em;
+}
+
+.config-bloque h3 {
+  margin-top: 0;
+}
+
+.config-bloque label {
+  display: block;
+  margin-top: 0.9em;
+  margin-bottom: 0.3em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.config-bloque textarea {
+  width: 100%;
+  padding: 0.55em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.config-campo {
+  margin-bottom: 0.4em;
+}
+
+.config-campo label {
+  margin-top: 0.6em;
+}
+
+.config-campo input {
+  width: 100%;
+  max-width: 280px;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+/* Indicador en vivo de la suma de los 7 pesos de PT-09 (Diseno
+   Tecnico Seccion 5.6): verde cuando da exactamente 100, rojo en
+   cualquier otro caso - mismo rojo que .tarjeta-resumen-alerta. */
+
+.config-suma-pesos {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 0.8em 0 0 0;
+}
+
+.config-suma-pesos.ok {
+  color: #1a7a33;
+}
+
+.config-suma-pesos.error {
+  color: #c0392b;
+}
