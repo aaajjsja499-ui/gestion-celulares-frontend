@@ -154,6 +154,7 @@ var Contab = {
   normalizarMedios: function (p, total) {
     var m = p.medios;
     if (!m && p.medio) m = [{ medio: p.medio, monto: total }];
+    if (!m && typeof SIMULANDO !== 'undefined' && SIMULANDO && total > 0) m = [{ medio: Config.medios()[0], monto: total }];
     return Contab.validarMedios(m, total);
   },
   validarMedios: function (medios, total) {

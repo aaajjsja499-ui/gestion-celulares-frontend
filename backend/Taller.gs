@@ -476,7 +476,7 @@ definir('obtenerReparaciones', {
       var e = r.id_equipo ? Datos.buscar('Equipos', 'id_equipo', r.id_equipo) : null;
       var pendiente = r.estado_tarifa === 'Pendiente de aprobación' || r.estado_tarifa === 'Devuelta';
       var venta = r.id_equipo ? Contab.ventaVigente(FuenteDatos, r.id_equipo) : null;
-      return { reparacion: r, equipo: e ? { id_equipo: e.id_equipo, marca: e.marca, modelo: e.modelo, estado: e.estado } : null, trabajos: elegidos, usos: Datos.filtrar('Repuestos_Usados', function (x) { return x.id_reparacion === r.id_reparacion; }), total_elegido: pendiente ? Taller.totalElegido(FuenteDatos, r.id_reparacion, r.ronda_tarifa) : null, dias_pendiente: pendiente && r.fecha_fin ? Util.diasEntre(r.fecha_fin, hoy) : 0, marcar_rojo: pendiente && r.fecha_fin && Util.diasEntre(r.fecha_fin, hoy) >= umbral, unidad_ya_vendida: !!venta, repeticiones: [] };
+      return { reparacion: r, equipo: e ? { id_equipo: e.id_equipo, marca: e.marca, modelo: e.modelo, estado: e.estado } : null, trabajos: elegidos, usos: Datos.filtrar('Repuestos_Usados', function (x) { return x.id_reparacion === r.id_reparacion; }), total_elegido: pendiente ? Taller.totalElegido(FuenteDatos, r.id_reparacion, r.ronda_tarifa) : null, dias_pendiente: pendiente && r.fecha_fin ? Util.diasEntre(r.fecha_fin, hoy) : 0, marcar_rojo: pendiente && r.fecha_fin && Util.diasEntre(r.fecha_fin, hoy) >= umbral, unidad_ya_vendida: !!venta, motivo_devolucion: r.estado_tarifa === 'Devuelta' ? String((Datos.filtrar('Aprobaciones_Tarifa', function (a) { return a.id_reparacion === r.id_reparacion && a.evento === 'Devuelta'; }).pop() || {}).motivo || '') : '', repeticiones: [] };
     });
   }
 });

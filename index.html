@@ -2,118 +2,49 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema de Gestion de Celulares</title>
-
-  <link rel="stylesheet" href="css/base.css?v=20261012a" />
-  <link rel="stylesheet" href="css/layout.css?v=20261012a" />
-  <link rel="stylesheet" href="css/componentes.css?v=20261012a" />
-  <link rel="stylesheet" href="css/tema-oscuro.css?v=20261012a" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1f3a5f" />
+  <title>Gestión de Celulares</title>
+  <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
-
-  <header id="app-header" hidden>
-    <strong id="app-titulo">Gestion de Celulares</strong>
-    <!-- Contador de alertas (Fase 8, primera pieza - Especificacion
-         de Interfaz Seccion 3.3, Diseno Tecnico Seccion 4.4 v2.2).
-         Se actualiza en cada navegacion desde js/core/router.js
-         (actualizarContadorAlertas_). Oculto mientras el total sea
-         cero o no haya llegado la primera respuesta del backend. -->
-    <span id="app-alertas-contador" class="badge-alertas" hidden title="Alertas activas"></span>
-    <span id="app-usuario"></span>
-  </header>
-
-  <main id="login-pantalla">
-    <h1>Gestion de Celulares</h1>
-    <p>Iniciá sesión con tu email y PIN para continuar.</p>
-    <form id="form-login">
-      <label for="login-email">Email</label>
-      <input type="email" id="login-email" name="email" required autocomplete="username" />
-
-      <label for="login-pin">PIN</label>
-      <input type="password" id="login-pin" name="pin" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" required autocomplete="current-password" />
-
-      <button type="submit">Ingresar</button>
+  <div id="login" hidden>
+    <form id="form-login" autocomplete="on">
+      <h1>Gestión de Celulares</h1>
+      <p id="login-aviso" class="aviso" hidden></p>
+      <label>Email<input type="email" id="login-email" autocomplete="username" required /></label>
+      <label>PIN<input type="password" id="login-pin" inputmode="numeric" autocomplete="current-password" required /></label>
+      <button type="submit" class="btn primario">Ingresar</button>
+      <p id="login-error" class="error" hidden></p>
     </form>
-    <p id="login-error" hidden></p>
-  </main>
+  </div>
 
-  <main id="app-contenido" hidden></main>
+  <div id="app" hidden>
+    <header id="barra">
+      <button id="atras" class="icono" hidden aria-label="Volver">‹</button>
+      <h1 id="titulo">Inicio</h1>
+      <span id="usuario"></span>
+    </header>
+    <main id="contenido"></main>
+    <nav id="tabs"></nav>
+  </div>
+  <div id="capas"></div>
 
-  <!-- config.js va primero: todo lo demas depende de CONFIG -->
-  <script src="config.js?v=20261012a"></script>
-
-  <!-- core: orden importa, cada uno depende del anterior -->
-  <script src="js/core/estado.js?v=20261012a"></script>
-  <script src="js/core/cache.js?v=20261012a"></script>
-  <script src="js/core/api.js?v=20261012a"></script>
-  <script src="js/core/auth.js?v=20261012a"></script>
-  <script src="js/core/router.js?v=20261012a"></script>
-  <!-- Fase 8, tercera pieza (Menu de Navegacion Principal - Diseno
-       Tecnico Seccion 7.3): dibuja y abre/cierra el panel del menu
-       hamburguesa, responsabilidad separada de router.js. Pieza
-       nueva y agregada, no reemplaza ningun script existente. -->
-  <script src="js/core/navegacion.js?v=20261012a"></script>
-
-  <script src="js/utils.js?v=20261012a"></script>
-
-  <!-- Libreria externa para exportar a Excel (.xlsx) desde Reportes
-       (Diseno Tecnico Seccion 4.12) - primera dependencia externa de
-       todo el proyecto. Se carga desde CDN, antes de reportes.js.
-       Pendiente de validar por Pedro que la CDN sea alcanzable desde
-       el host local de SPCK antes de dar por cerrada esta pieza; si
-       no lo es, la alternativa es empaquetar una copia local del
-       archivo dentro del .zip (ver nota en Contexto de Sesion). -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js?v=20261012a"></script>
-
-  <!-- calculos -->
-  <script src="js/calculos/valoracion.js?v=20261012a"></script>
-  <script src="js/calculos/viabilidad.js?v=20261012a"></script>
-  <script src="js/calculos/rentabilidad.js?v=20261012a"></script>
-  <script src="js/calculos/alertas.js?v=20261012a"></script>
-
-  <!-- pantallas: cada una se auto-registra en el Router al cargar -->
-  <script src="js/pantallas/dashboard.js?v=20261012a"></script>
-  <script src="js/pantallas/equipos.js?v=20261012a"></script>
-  <script src="js/pantallas/ficha-equipo.js?v=20261012a"></script>
-  <script src="js/pantallas/viabilidad-consulta.js?v=20261012a"></script>
-  <script src="js/pantallas/diagnosticos.js?v=20261012a"></script>
-  <script src="js/pantallas/reparaciones.js?v=20261012a"></script>
-  <script src="js/pantallas/repuestos.js?v=20261012a"></script>
-  <script src="js/pantallas/ventas.js?v=20261012a"></script>
-  <script src="js/pantallas/catalogo.js?v=20261012a"></script>
-  <script src="js/pantallas/decisiones.js?v=20261012a"></script>
-  <script src="js/pantallas/clientes.js?v=20261012a"></script>
-  <script src="js/pantallas/reportes.js?v=20261012a"></script>
-  <script src="js/pantallas/vendedores.js?v=20261012a"></script>
-  <!-- Fase 8, segunda pieza (Gestion de Usuarios - Especificacion de
-       Interfaz Seccion 4.14): pantalla nueva, visible solo para el
-       rol Administrador. -->
-  <script src="js/pantallas/usuarios.js?v=20261012a"></script>
-  <!-- Fase 8, cuarta y quinta pieza (Gestion de Gastos Operativos y
-       Gestion de Configuracion - Especificacion de Interfaz Secciones
-       4.15 y 4.16): pantallas nuevas, visibles solo para el rol
-       Administrador. -->
-  <script src="js/pantallas/gastos-operativos.js?v=20261012a"></script>
-  <script src="js/pantallas/configuracion.js?v=20261012a"></script>
-
-  <script>
-    // Arranque de la app: mientras no haya login, solo se ve
-    // #login-pantalla. Tras el login, se muestra el header y el
-    // contenido, y arranca el router.
-    Auth.iniciar();
-
-    document.addEventListener("gestion-celulares:login-ok", () => {
-      const { usuario } = Estado.get();
-      document.getElementById("login-pantalla").hidden = true;
-      document.getElementById("app-header").hidden = false;
-      document.getElementById("app-contenido").hidden = false;
-      document.getElementById("app-usuario").textContent =
-        usuario.nombre + " (" + usuario.roles.join(", ") + ")";
-      Router.iniciar();
-      Navegacion.iniciar();
-    });
-  </script>
-
+  <script src="config.js"></script>
+  <script src="js/core/util.js"></script>
+  <script src="js/core/api.js"></script>
+  <script src="js/core/ui.js"></script>
+  <script src="js/core/app.js"></script>
+  <script src="js/pantallas/inicio.js"></script>
+  <script src="js/pantallas/equipo.js"></script>
+  <script src="js/pantallas/vender.js"></script>
+  <script src="js/pantallas/clientes.js"></script>
+  <script src="js/pantallas/cartera.js"></script>
+  <script src="js/pantallas/taller.js"></script>
+  <script src="js/pantallas/ordenes.js"></script>
+  <script src="js/pantallas/repuestos.js"></script>
+  <script src="js/pantallas/dinero.js"></script>
+  <script src="js/pantallas/mas.js"></script>
+  <script>App.iniciar();</script>
 </body>
 </html>

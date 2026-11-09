@@ -367,6 +367,7 @@ definir('registrarIngresoExcepcional', {
   }
 });
 
+var SIMULANDO = false;
 // Simulaciones: ejecutan el mismo plan sin escribir y devuelven la huella del estado usado
 ['Cobro:registrarCobro', 'Cancelacion:cancelarAnticipado', 'Incobrable:marcarIncobrable', 'Recuperacion:recuperarEquipo', 'Devolucion:registrarDevolucion', 'Reversa:reversarCobro', 'Condonacion:condonarCredito'].forEach(function (par) {
   var partes = par.split(':'), real = partes[1];
@@ -374,7 +375,8 @@ definir('registrarIngresoExcepcional', {
     Datos.reiniciar();
     var pl = new Planificador(u, 'simulacion', real);
     var p2 = Util.copiar(p); p2.huella_simulada = '';
-    OPS[real].planificar(p2, pl, u);
+    SIMULANDO = true;
+    try { OPS[real].planificar(p2, pl, u); } finally { SIMULANDO = false; }
     var r = pl.resultado || {};
     return r;
   } });

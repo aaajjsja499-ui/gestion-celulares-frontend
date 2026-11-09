@@ -1,14 +1,10 @@
 // GESTION_CELULARES - config.js
-// Unica fuente de parametros de entorno. No contiene secretos:
-// la seguridad real vive en la verificacion de identidad del
-// servidor (Diseno Tecnico, Seccion 6.1), no en ocultar esta URL.
-//
-// Reemplazar APPS_SCRIPT_URL despues de desplegar el proyecto de
-// Apps Script como Web App (Diseno Tecnico Seccion 6.1) y copiar la
-// URL de despliegue.
-
+// Unica fuente de parametros de entorno. No contiene secretos.
+// SISTEMA NUEVO (v4): pegar aqui la URL de la implementacion de Apps Script
+// (Implementar > Nueva implementacion > Aplicacion web) del Sheet NUEVO.
+// Mientras diga PENDIENTE, la app avisa en pantalla de login.
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzTNcxcc0QPqHdEem6-TXf18_brAFE9owF0cXdjjg1nAb7ocy4CsHzBds69wM3u627L8g/exec",
-  NOMBRE_SISTEMA: "Sistema de Gestion de Celulares",
-  MONEDA: "PYG",
+  APPS_SCRIPT_URL: "PENDIENTE",
+  NOMBRE_SISTEMA: "Sistema de Gestión de Celulares",
+  VERSION: "4.0.0",
 };
