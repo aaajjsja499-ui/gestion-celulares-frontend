@@ -23,7 +23,12 @@ var Taller = {
     trabajos.forEach(function (t) {
       var tar = pl.get('Tarifas_Trabajo', t.id_tarifa);
       if (!tar) throw Util.error('El trabajo elegido no existe en el catálogo');
-      if (tar.activo !== 'Sí') throw Util.error('El trabajo "' + tar.nombre_trabajo + '" ya no está activo en el catálogo');
+      if (tar.activo !== 'Sí') {
+        // una version reemplazada por otra mas nueva sigue valiendo para quien la eligio antes del cambio (N59)
+        var rep0 = pl.get('Reparaciones', idRep);
+        var reemplazada = pl.filas('Tarifas_Trabajo').some(function (x) { return x.id_trabajo === tar.id_trabajo && x.id_tarifa !== tar.id_tarifa && x.activo === 'Sí' && String(x.vigente_desde) >= String(tar.vigente_desde); });
+        if (!(reemplazada && rep0 && String(tar.vigente_desde) <= String(rep0.fecha_inicio))) throw Util.error('El trabajo "' + tar.nombre_trabajo + '" ya no está activo en el catálogo');
+      }
       if (vistos[tar.id_trabajo]) throw Util.error('El trabajo "' + tar.nombre_trabajo + '" está repetido: una línea por tipo de trabajo');
       vistos[tar.id_trabajo] = true;
       var detalle = Util.texto(t.detalle);

@@ -22,10 +22,10 @@ definir('cerrarMes', {
     if (Contab.mesCerrado(pl, mes)) throw Util.error('El mes ' + mes + ' ya está cerrado');
     var cierres = pl.filas('Cierres_Mensuales').map(function (c) { return c.mes; }).sort();
     if (cierres.length && mes !== mesSiguiente(cierres[cierres.length - 1])) throw Util.error('El siguiente mes a cerrar es ' + mesSiguiente(cierres[cierres.length - 1]));
-    var pend = pl.filas('Reparaciones').filter(function (r) { return r.estado_tarifa === 'Pendiente de aprobación' && Util.mes(r.fecha_fin || r.fecha_inicio) <= mes; });
-    if (pend.length) throw Util.error('Hay ' + pend.length + ' tarifas de técnico sin aprobar hasta ' + mes + ': apruébelas antes de cerrar');
+    var pend = pl.filas('Reparaciones').filter(function (r) { return (r.estado_tarifa === 'Pendiente de aprobación' || r.estado_tarifa === 'Devuelta') && Util.mes(r.fecha_fin || r.fecha_inicio) <= mes; });
+    if (pend.length) throw Util.error('Hay ' + pend.length + ' tarifas de técnico sin aprobar o devueltas hasta ' + mes + ': ' + pend.map(function (r) { return r.id_reparacion; }).join(', '));
     var abiertas = pl.filas('Operaciones').filter(function (o) { return o.estado === 'Iniciada'; });
-    if (abiertas.length) throw Util.error('Hay operaciones interrumpidas pendientes: resuélvalas antes de cerrar');
+    if (abiertas.length) throw Util.error('Hay operaciones interrumpidas pendientes (' + abiertas.map(function (o) { return o.id_operacion; }).join(', ') + '): resuélvalas en Operaciones pendientes antes de cerrar');
     var bloq = pl.filas('Registros_Bloqueados').filter(function (b) { return b.activo === 'Sí'; });
     if (bloq.length) throw Util.error('Hay registros bloqueados por diferencia: resuélvalos antes de cerrar');
     var difs = Invariantes.verificarTodo(pl);

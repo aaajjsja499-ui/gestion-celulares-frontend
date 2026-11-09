@@ -1,7 +1,7 @@
 // GESTION_CELULARES - Caja.gs (Diseno Tecnico 4.26 a 4.30)
 // Ajustes de caja, traslados entre medios, gastos operativos y lecturas de caja.
 
-var CATEGORIAS_GASTO = ['Alquiler', 'Servicios', 'Sueldos', 'Transporte', 'Publicidad', 'Comisiones', 'Impuestos', 'Herramientas', 'Otros'];
+var CATEGORIAS_GASTO = ['Alquiler', 'Servicios', 'Sueldos', 'Transporte', 'Publicidad', 'Comisión de medio de pago', 'Impuestos', 'Herramientas', 'Otros'];
 
 definir('ajustarCaja', {
   roles: [ROL_ADMIN],
@@ -18,6 +18,14 @@ definir('ajustarCaja', {
   }
 });
 
+function comisionSugerida(medioOrigen, monto) {
+  var bps = /billetera/i.test(medioOrigen) ? Config.valor('comision_extraccion_bps') : (/transferencia/i.test(medioOrigen) ? Config.valor('comision_transferencia_bps') : 0);
+  return Util.pct(monto, bps);
+}
+definir('sugerirComisionTraslado', {
+  roles: [ROL_ADMIN], lectura: true,
+  leer: function (p) { var m = Util.entero(p.monto); if (isNaN(m) || m <= 0) throw Util.error('El monto debe ser un entero mayor que 0'); return { comision_sugerida: comisionSugerida(p.medio_origen, m) }; }
+});
 definir('trasladarEntreMedios', {
   roles: [ROL_ADMIN],
   huella: function (p) { return ['traslado', p.medio_origen, p.medio_destino, p.monto].join('|'); },
@@ -32,7 +40,7 @@ definir('trasladarEntreMedios', {
     Contab.dinero(pl, 'Egreso', 'Traslado entre medios', o, 'Traslados', idT, 'Hacia ' + p.medio_destino);
     Contab.dinero(pl, 'Ingreso', 'Traslado entre medios', d, 'Traslados', idT, 'Desde ' + p.medio_origen);
     if (com > 0) {
-      var g = pl.add('Gastos_Operativos', { fecha: Util.hoy(), categoria: 'Comisiones', monto: com, medio: p.medio_origen, descripcion: 'Comisión de traslado ' + p.medio_origen + ' → ' + p.medio_destino, responsable: pl.usuario.email, anulado: 'No' });
+      var g = pl.add('Gastos_Operativos', { fecha: Util.hoy(), categoria: 'Comisión de medio de pago', monto: com, medio: p.medio_origen, descripcion: 'Comisión de traslado ' + p.medio_origen + ' → ' + p.medio_destino, responsable: pl.usuario.email, anulado: 'No' });
       Contab.dinero(pl, 'Egreso', 'Gasto operativo', Contab.validarMedios([{ medio: p.medio_origen, monto: com }], com), 'Gastos_Operativos', g.id_gasto, 'Comisión');
     }
     pl.resultado = { id_traslado: idT, comision: com };

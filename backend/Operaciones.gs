@@ -116,7 +116,7 @@ function ejecutarOperacion(nombre, params, usuario) {
     Datos.reiniciar();
     var fila = Datos.buscar('Operaciones', 'id_operacion', idOp);
     if (fila && fila.estado === 'Completa') return JSON.parse(fila.resultado_resumen || 'null');
-    if (fila && fila.estado === 'Iniciada') return completarOperacion(fila, JSON.parse(fila.plan));
+    if (fila && fila.estado === 'Iniciada') return completarOperacion(fila, reubicarPlan(JSON.parse(fila.plan)));
 
     var pl = new Planificador(usuario, idOp, nombre);
     var registros = def.registros ? def.registros(params) : [];
@@ -144,7 +144,7 @@ function ejecutarOperacion(nombre, params, usuario) {
     // 4) validar y planificar (aqui se rechaza sin escribir nada)
     def.planificar(params, pl, usuario);
     registros.forEach(function (r) { pl.registro(r); });
-    var plan = { writes: pl.writes, caches: pl.caches, resultado: pl.resultado || {}, registros: pl.registros };
+    var plan = { ahora: pl.ahora, writes: pl.writes, caches: pl.caches, resultado: pl.resultado || {}, registros: pl.registros };
     var nueva = Datos.agregar('Operaciones', { id_operacion: idOp, endpoint: nombre, fecha_hora: '', fecha_inicio: pl.ahora, responsable: usuario.email, resultado_resumen: '', estado: 'Iniciada', registro: pl.registros.join(','), payload: JSON.stringify(params), huella: huella, plan: JSON.stringify(plan) });
     var res = completarOperacion(nueva, plan);
     if (correctivo) { var rojos = Invariantes.revisar(pl.registros); if (rojos.length) { res = JSON.parse(JSON.stringify(res || {})); res.diferencias = rojos.map(function (x) { return x.detalle; }); } }
@@ -154,6 +154,16 @@ function ejecutarOperacion(nombre, params, usuario) {
   }
 }
 
+// Una operacion que se completa en otro mes que el de su inicio escribe en el mes de finalizacion (Seccion 5.7, N49)
+function reubicarPlan(plan) {
+  var ahora = Util.ahora();
+  if (!plan.ahora || Util.mes(plan.ahora) === Util.mes(ahora)) return plan;
+  var mesViejo = Util.mes(plan.ahora), mesNuevo = Util.mes(ahora);
+  function fix(o) { for (var k in o) { if (o[k] === plan.ahora) o[k] = ahora; else if (k === 'mes_costo' && o[k] === mesViejo) o[k] = mesNuevo; } }
+  plan.writes.forEach(function (w) { fix(w.t === 'add' ? w.fila : w.cambios); });
+  plan.ahora = ahora;
+  return plan;
+}
 function completarOperacion(fila, plan) {
   aplicarPlan(plan);
   Datos.actualizar('Operaciones', fila, { estado: 'Completa', fecha_hora: Util.ahora(), resultado_resumen: JSON.stringify(plan.resultado), plan: '' });
@@ -177,7 +187,7 @@ function resolverOperacionInterrumpida(p, usuario) {
     Datos.reiniciar();
     var f = Datos.buscar('Operaciones', 'id_operacion', p.id_operacion_pendiente);
     if (!f || f.estado !== 'Iniciada') throw Util.error('no hay una operacion pendiente con ese id');
-    if (p.accion === 'reanudar') return completarOperacion(f, JSON.parse(f.plan));
+    if (p.accion === 'reanudar') return completarOperacion(f, reubicarPlan(JSON.parse(f.plan)));
     if (p.accion !== 'abandonar') throw Util.error('accion invalida: reanudar o abandonar');
     if (f.endpoint === 'aprobarTarifaReparacion' || f.endpoint === 'corregirTarifaAprobada') throw Util.error('esta operacion no se abandona: se reanuda hasta completarla');
     var motivo = Util.texto(p.motivo);

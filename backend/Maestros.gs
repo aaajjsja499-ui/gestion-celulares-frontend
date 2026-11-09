@@ -191,6 +191,15 @@ definir('obtenerResumenAlertas', {
     var pend = reps.filter(function (r) { return r.estado_tarifa === 'Pendiente de aprobación'; });
     var dev = reps.filter(function (r) { return r.estado_tarifa === 'Devuelta' && (admin || r.tecnico_email === u.email); });
     if (admin) al('tarifas', 'Tarifas de técnico por aprobar', pend.length);
+    // trabajos parciales seguidos en la misma unidad u orden (informativa)
+    var seguidos = {}, aviso = 0;
+    reps.filter(function (r) { return r.fecha_fin; }).forEach(function (r) {
+      var k = r.id_equipo || r.id_orden;
+      if (r.resultado === 'Reparado parcialmente') seguidos[k] = (seguidos[k] || 0) + 1; else seguidos[k] = 0;
+      if (seguidos[k] >= cfg.trabajos_parciales_alerta) aviso++;
+    });
+    var unicos = {}; Object.keys(seguidos).forEach(function (k) { if (seguidos[k] >= cfg.trabajos_parciales_alerta) unicos[k] = true; });
+    al('parciales', 'Unidades con trabajos parciales seguidos', Object.keys(unicos).length);
     al('tarifas_devueltas', 'Tarifas devueltas para corregir', dev.length);
     al('repuestos', 'Repuestos bajo el mínimo', Datos.leer('Repuestos').filter(function (r) { return r.activo !== 'No' && Util.num(r.stock_actual) <= cfg.stock_minimo_repuestos; }).length);
     if (admin) {
